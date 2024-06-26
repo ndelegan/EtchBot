@@ -45,7 +45,7 @@ class Siglent:
           self.device = rm.open_resource(device_str) # connects directly to siglent device
           print("Connected: ", self.device.query("*IDN?")) # prints siglents basic info(name, ip, etc)
         except Exception as err:
-          print("Exception: ", err)
+          print("Cannot connect to Siglent: ", err)
 
 
     """
