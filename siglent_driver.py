@@ -46,6 +46,7 @@ class Siglent:
           print("Connected: ", self.device.query("*IDN?")) # prints siglents basic info(name, ip, etc)
         except Exception as err:
           print("Cannot connect to Siglent: ", err)
+          quit()
 
 
     """
