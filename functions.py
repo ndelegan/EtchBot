@@ -72,3 +72,56 @@ def send_slack_message(webhook_url, message):
         print('Message sent successfully to Slack!')
     else:
         print(f'Failed to send message to Slack. Error: {response.status_code}, {response.text}')
+
+"""
+Square Detection of Membrane of Interest
+Authors: Claudia Jimenez, Aima Qutbuddin, Kyle Cheek, Lisette Ruano
+
+Args:
+    image : the image being passed to perform square detection on 
+
+Returns:
+    detected : boolean -> true if a square is found, false otherwise
+    result : copy of original image with detected squares superimposed (also displayed on screen) # may change later
+
+Citations: 
+    https://stackoverflow.com/questions/55169645/square-detection-in-image,
+    https://www.tutorialspoint.com/how-to-detect-a-rectangle-and-square-in-an-image-using-opencv-python, 
+    https://opencv24-python-tutorials.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_thresholding/
+        py_thresholding.html#otsus-binarization
+"""
+
+def detectSquare(image): 
+    image_copy = image.copy()
+    detected = False
+    
+    # Convert to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Apply Gaussian blur to filter out noise
+    g_blur = cv2.GaussianBlur(gray,(5,5),0)
+    
+    # Apply Otsu's thresholding (automatically calculates a threshold value and binarizes image)
+    ret3,otsu = cv2.threshold(g_blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    
+    # Invert the image (swap black and white)
+    # Square will be detected better as a dark shape with a light outline
+    image_binary = cv2.bitwise_not(otsu)
+
+    # find contours
+    (contours,_) = cv2.findContours(image_binary, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+    print('Contours: ' , len(contours))
+    
+    #draw and show detected squares
+    arg1 = 10
+    for contour in contours:
+        (x,y,w,h) = cv2.boundingRect(contour)
+        if h > arg1 and w > arg1:
+            cv2.rectangle(image_copy, (x,y), (x+w,y+h),(0,255,0), 2)
+            detected = True
+
+    result = cv2.imshow('result',image_copy)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    
+    return detected, result
