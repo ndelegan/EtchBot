@@ -7,7 +7,7 @@
     Date Created: 06/26/2024
 
 """
-
+#hi hello
 # menu options
 
 # etch full grid, not ready yet
