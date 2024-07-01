@@ -260,7 +260,7 @@ def square_detect(image):
 def probe_adjustment(imagePath):
     detected = False
     
-    image = cv2.imread(imageDestination)
+    image = cv2.imread(imagePath)
    
     #Converts picture into grayscale and blurs it
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) 

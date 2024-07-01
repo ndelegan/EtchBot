@@ -49,26 +49,26 @@ def cut(row_len, col_len):
                     square_coor = Functions.square_detect(image_name)
                     
                     # move probes according to full square or partial etch
-                    Functions.probe_adjustment()
+                    Functions.probe_adjustment(image_name)
                     
                     Functions.area_detect(image_name) 
                 
-                # detect bubble
-                bubble_count = Functions.bubble_detect(bubble_count, image_name)
-                
-                if bubble_count > 0:
-                    Functions.send_slack_message("Bubble Obstruction!")
-                    # water pump
+                # detect bubble and clean 
+                while bubble_count > 0:
+                    bubble_count = Functions.bubble_detect(bubble_count, image_name)
+
+                    # check if bubbles are gone
+                    if bubble_count > 0:
+                        Functions.send_slack_message("Bubble Obstruction!")
+                        # water pump
                 
                 # check tether percentage
                 Functions.area_detect()
-                
                 
                 # end of etch
                 if dark_area <= 7:
                     siglent.output_off()
                     Functions.send_slack_message("Tether Minimum Reached! Etch Complete.")
-                    
                     
         # move to next square
         
