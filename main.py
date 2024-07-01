@@ -8,7 +8,7 @@
 
 """
 
-# import etching as Etching
+import etching as Etching
 import water_pump as Water
 
 opt = ''
@@ -24,13 +24,17 @@ while opt != 'x':
     if opt == '1':
         # etch full grid, not ready yet
             # tell me your grid size
-        Etching.full_grid()
+        # Etching.full_grid()
+        pass
     elif opt == '2':
         # etch one square but probes aren't aligned
-        Etching.square_vtwo()
+        # Etching.square_vtwo()
+        pass
     elif opt == '3':
         # etch one square, assuming device setup correctly
-        Etching.square_vone()
+        row = input("What is the row count?")
+        col = input("What is the col count?")
+        Etching.cut(row, col)
     elif opt == 'x':
         # quit and move devices once done aka reset everything for the day
         quit()
