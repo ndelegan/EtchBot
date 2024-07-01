@@ -44,7 +44,7 @@ def take_image(counter,filename):
     filename = f'{string}{counter}{string2}'
     mini_str = "imgCapture"
     specified_filename = f'{mini_str}{counter}{string2}'
-    return specified_filename
+    return filename
 
 """
     
