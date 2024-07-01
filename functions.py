@@ -202,3 +202,7 @@ def square_detect(image):
     cv2.destroyAllWindows()
     
     return detected, result
+
+
+def probe_adjustment():
+    pass
