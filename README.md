@@ -8,16 +8,16 @@ Argonne Collaborator(s): Nazar Delegan, Clayton Devault
 
 Overview:
 
-Our task is to automate the etching process of diamond membranes using a Signatone Voltage Source, Signatone Probe Controls. 
+* Our task is to automate the etching process of diamond membranes using a Signatone Voltage Source, Signatone Probe Controls. 
 
 Current Progress Made:
 
-Bubble Bot (Recognition + Sending a Slack Message)
-Tether Bot (Recognition + Sending a Slack Message)
-Signatone and Siglent Device Driver
-Diamond Square Recognition
-Pre-Etch: Partially detects squares not all in an image
-Post Etch: Can detect leftover area when image is cropped for a single square (about 7% dark area left at the moment)
+ - Bubble Bot (Recognition + Sending a Slack Message)
+ - Tether Bot (Recognition + Sending a Slack Message)
+ - Signatone and Siglent Device Driver
+ - Diamond Square Recognition
+ - Pre-Etch: Partially detects squares not all in an image
+ - Post Etch: Can detect leftover area when image is cropped for a single square (about 7% dark area left at the moment)
 
 Images:
 
