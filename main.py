@@ -20,20 +20,13 @@ print('Welcome to Etch Bot!')
 Water.turn_on()
 
 while opt != 'x':
-    print('Pick an Option: ')
-    if opt == '1':
+    print('Select an Option (Enter the number of the option): ')
+    if opt == '1. Etch a Grid':
         # etch full grid, not ready yet
-            # tell me your grid size
-        # Etching.full_grid()
-        pass
-    elif opt == '2':
         # etch one square but probes aren't aligned
-        # Etching.square_vtwo()
-        pass
-    elif opt == '3':
         # etch one square, assuming device setup correctly
-        row = input("What is the row count?")
-        col = input("What is the col count?")
+        row = input("How many rows are in the grid?")
+        col = input("How many cols are in the grid?")
         Etching.cut(row, col)
     elif opt == 'x':
         # quit and move devices once done aka reset everything for the day
@@ -42,3 +35,4 @@ while opt != 'x':
         print("Command not valid. Try again.")
         
 print('Have a good day! :)')
+quit()
