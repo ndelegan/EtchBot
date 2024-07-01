@@ -10,6 +10,7 @@ Overview:
 Our task is to automate the etching process of diamond membranes using a Signatone Voltage Source, Signatone Probe Controls. 
 
 Current Progress Made
+
 Bubble Bot (Recognition + Sending a Slack Message)
 Tether Bot (Recognition + Sending a Slack Message)
 Signatone and Siglent Device Driver
