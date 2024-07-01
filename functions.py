@@ -117,10 +117,6 @@ def area_detect(imagePath):
     
    #Read in image location
     image = cv2.imread(imagePath)
-    img = np.zeros(image.shape, image.dtype)
-    alpha = 2.0
-    beta = 30
-    img = cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
 
     #Converts image to gray scale and blurs it
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
