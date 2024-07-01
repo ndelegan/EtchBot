@@ -7,9 +7,10 @@ Author(s): Fernanda Villalpando, Lisset Rico, reporting on additional work done 
 Argonne Collaborator(s): Nazar Delegan, Clayton Devault
 
 Overview:
+
 Our task is to automate the etching process of diamond membranes using a Signatone Voltage Source, Signatone Probe Controls. 
 
-Current Progress Made
+Current Progress Made:
 
 Bubble Bot (Recognition + Sending a Slack Message)
 Tether Bot (Recognition + Sending a Slack Message)
