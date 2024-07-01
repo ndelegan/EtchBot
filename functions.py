@@ -193,6 +193,8 @@ def square_detect(image):
         (x,y,w,h) = cv2.boundingRect(contour)
         if h > arg1 and w > arg1:
             cv2.rectangle(image_copy, (x,y), (x+w,y+h),(0,255,0), 2)
+            cv2.circle(image_copy, (x, y), 3 ,255, -1) # put a dot on upper left corner
+            cv2.circle(image_copy, (x+w, y+h), 3 ,255, -1) # put a dot on lower right corner
             detected = True
 
     result = cv2.imshow('result',image_copy)
