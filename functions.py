@@ -1,3 +1,19 @@
+"""
+
+    Helper functions that are used in the etching process within the 'etching.py' file.
+    
+    Each function was written by different students from the UIC Chicago Tech Circle Team:
+        Take Image Author(s): Andrea Munoz
+        Bubble Detect Author(s): Fernanda Villalpando
+        Area Detect Author(s): Lisette Ruano
+        Send Slack Message Author(s): Andrea Munoz
+        Square Detect Author(s): Claudia Jimenez, Aima Qutbuddin, Lisette Ruano
+        
+    Collaborator(s): Argonne National Laboratory (Nazar Delegan, Clayton Devault), Kyle Cheek
+    Date Created: 06/26/2024
+
+"""
+
 import time
 import cv2
 import requests
@@ -7,7 +23,21 @@ import random
 import numpy as np
 
 
-# Function to execute image function for signatone
+"""
+    
+    take_image : 
+    
+    Args:
+        counter : integer
+        filename : string
+    Returns:
+        None.
+    Raises:
+        None.
+    Citations: 
+        None.
+    
+"""
 def take_image(counter,filename):
     string = " C:\\CM400\\photos\\imgCapture"
     string2 = ".bmp"
@@ -17,6 +47,21 @@ def take_image(counter,filename):
     return specified_filename
 
 
+"""
+    
+    bubble_detect : 
+    
+    Args:
+        bubble_count : integer
+        image_name : string
+    Returns:
+        None.
+    Raises:
+        None.
+    Citations: 
+        None.
+    
+"""
 def bubble_detect(bubble_count, image_name):
     #Image Path Declaration
     image_path = "C:\\Users\\AdminUser\\Downloads" + image_name
@@ -54,10 +99,39 @@ def bubble_detect(bubble_count, image_name):
     return bubble_count
 
 
+"""
+    
+    area_detect : 
+    
+    Args:
+        None.
+    Returns:
+        None.
+    Raises:
+        None.
+    Citations: 
+        None.
+    
+"""
 def area_detect():
     pass
 
 
+"""
+    
+    send_slack_message : 
+    
+    Args:
+        webhook_url : string
+        message : string
+    Returns:
+        None.
+    Raises:
+        None.
+    Citations: 
+        None.
+    
+"""
 def send_slack_message(webhook_url, message):
     #Defining JSON
     headers = {'Content-Type': 'application/json'}
@@ -73,25 +147,26 @@ def send_slack_message(webhook_url, message):
     else:
         print(f'Failed to send message to Slack. Error: {response.status_code}, {response.text}')
 
-"""
-Square Detection of Membrane of Interest
-Authors: Claudia Jimenez, Aima Qutbuddin, Kyle Cheek, Lisette Ruano
 
-Args:
-    image : the image being passed to perform square detection on 
-
-Returns:
-    detected : boolean -> true if a square is found, false otherwise
-    result : copy of original image with detected squares superimposed (also displayed on screen) # may change later
-
-Citations: 
-    https://stackoverflow.com/questions/55169645/square-detection-in-image,
-    https://www.tutorialspoint.com/how-to-detect-a-rectangle-and-square-in-an-image-using-opencv-python, 
-    https://opencv24-python-tutorials.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_thresholding/
-        py_thresholding.html#otsus-binarization
 """
 
-def detectSquare(image): 
+    square_detect : square detection of membrane of interest
+
+    Args:
+        image : string
+    Returns:
+        detected : boolean -> true if a square is found, false otherwise
+        result : copy of original image with detected squares superimposed (also displayed on screen) # may change later
+    Raises:
+        No errors. Assumes that all devices are operating correctly.
+    Citations: 
+        https://stackoverflow.com/questions/55169645/square-detection-in-image,
+        https://www.tutorialspoint.com/how-to-detect-a-rectangle-and-square-in-an-image-using-opencv-python, 
+        https://opencv24-python-tutorials.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_thresholding/
+            py_thresholding.html#otsus-binarization
+            
+"""
+def square_detect(image): 
     image_copy = image.copy()
     detected = False
     
