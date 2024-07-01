@@ -258,21 +258,22 @@ def square_detect(image):
 
 
 def probe_adjustment(imagePath):
-    detected = 0
+    detected = False
     
-    image = cv2.imread(imagePath)
+    image = cv2.imread(imageDestination)
    
     #Converts picture into grayscale and blurs it
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) 
     blur = cv2.GaussianBlur(gray,(5,5),0) 
-    
+
     #Apply otsu threshold
     ret3,otsu = cv2.threshold(blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     image_binary = cv2.bitwise_not(otsu)
+
     
     (contours,_) = cv2.findContours(image_binary, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-    
-    count = 1
+
+    count = 0
     for cnt in contours:
         approx = cv2.approxPolyDP(cnt, 0.1*cv2.arcLength(cnt, True), True)
         area = cv2.contourArea(cnt) #Calculates area of objects to disregard stray small shapes it finds
@@ -280,27 +281,29 @@ def probe_adjustment(imagePath):
         if len(approx) == 3 and area > 400:
             
             # Extract vertice of the triangle
-            point = tuple(approx[1][0])
-        
-            # Prints the coordinates
-            print("Point:", point)
+            if count == 0:
+                rightProbe = tuple(approx[1][0])
+            else:
+                leftProbe = tuple(approx[1][0])
             
             img = cv2.drawContours(image, [cnt], -1, (0,255,255), 3)
             
-            cv2.circle(image, point, 5, (0, 255, 0), -1)  # Green dot at point
+            # cv2.circle(image, point, 5, (0, 255, 0), -1)  # Green dot at point
             
             M = cv2.moments(cnt)
-            
+
+            count+=1
             combined_string = str(count)
             
             if M['m00'] != 0.0:
                 x = int(M['m10']/M['m00'])
                 y = int(M['m01']/M['m00'])
                 cv2.putText(img, combined_string, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
-                count +=1
 
-        if count == 2:
-            detected = 1
+            
 
-    return detected
+    if count == 2:
+        detected = True
+
+    return detected,rightProbe,leftProbe
     
