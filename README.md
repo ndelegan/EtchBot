@@ -1,11 +1,12 @@
 # EtchBot
 Common repository for code and documentation of the 2024 BTTC Summer Project in the Argonne Foundry related to autonomous etching of membranes.
 
-Chicago Tech Circle and Argonne 
+Chicago Tech Circle and Argonne
+
 Author(s): Fernanda Villalpando, Lisset Rico, reporting on additional work done by Claudia Jimenez, Aima Qutbuddin, Lisette Ruano, Andrea Muñoz
 Argonne Collaborator(s): Nazar Delegan, Clayton Devault
 
-Overview
+Overview:
 Our task is to automate the etching process of diamond membranes using a Signatone Voltage Source, Signatone Probe Controls. 
 
 Current Progress Made
