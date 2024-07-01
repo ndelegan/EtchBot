@@ -22,6 +22,8 @@ import time
         __init__ : connect to device
         set_home : This sets the current X, Y position of the active device to 0,0
         set_device : Select the active device for future commands.
+        get_device : returns the selected active device - chuck, scope, cap1, cap2, cap3, cap4
+        get_cap : returns the current x,y,z position of the active device in microns
         move_rel : Moves the current device to the new position in reference to the current position.
         move_z : Moves the current selected device to the new absolute Z position in reference to the current Z position.
         move_xyz : Move the current CAP or the microscope to the specified x, y, z location, or the stage to the specified x, y, z location.
@@ -59,7 +61,7 @@ class Signatone:
           self.device.set_visa_attribute(constants.VI_ATTR_TERMCHAR_EN, constants.VI_TRUE)
           self.device.set_visa_attribute(constants.VI_ATTR_FILE_APPEND_EN, constants.VI_FALSE)
           self.device.query('*IDN?')
-          print("Connected: ", self.device.query("*IDN?")) # prints siglents basic info(name, ip, etc)
+          print(self.device.query("*IDN?")) # prints siglents basic info(name, ip, etc)
         except Exception as err:
           print("Cannot connect to Signatone: ", err)
           quit()
@@ -93,6 +95,20 @@ class Signatone:
     def set_device(self, dev):
         device_str = "SETDEVICE " + dev
         self.device.query(device_str)
+    """
+    get_device : returns the selected active device - chuck, scope, cap1, cap2, cap3, cap4
+    
+    Args:
+        None
+    Returns:
+        device name 
+    Raises: 
+        Exception. Prints error if can't connect to device.
+    """
+    def get_device(self):
+        device_str = "GETDEVICE"
+        device = self.device.query(device_str)
+        return device
     """
     get_cap : returns the current x,y,z position of the active device in microns
 
