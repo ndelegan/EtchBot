@@ -46,6 +46,30 @@ def take_image(counter,filename):
     specified_filename = f'{mini_str}{counter}{string2}'
     return specified_filename
 
+"""
+    
+    delete_image : 
+    
+    Args:
+        counter : integer
+        filename : string
+    Returns:
+        None.
+    Raises:
+        None.
+    Citations: 
+        None.
+    
+"""
+def delete_image(counter, filename):
+    string = " C:\\CM400\\photos\\imgCapture"
+    string2 = ".bmp"
+    
+    while counter >= 0:
+        filename = f'{string}{counter}{string2}'
+        os.remove(filename)
+        counter-=1
+        
 
 """
     
@@ -114,13 +138,12 @@ def bubble_detect(bubble_count, image_name):
     
 """
 def area_detect(imagePath):
-    
    #Read in image location
     image = cv2.imread(imagePath)
-    img = np.zeros(image.shape, image.dtype)
-    alpha = 2.0
-    beta = 30
-    img = cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
+    # img = np.zeros(image.shape, image.dtype)
+    # alpha = 2.0
+    # beta = 30
+    # img = cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
 
     #Converts image to gray scale and blurs it
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)

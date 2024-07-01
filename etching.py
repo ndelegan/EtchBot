@@ -20,41 +20,38 @@ def cut(row_len, col_len):
     # setting up our devices
     siglent = Siglent.Siglent()
     signatone = Signatone.Signatone()
-
-    # initializing our variables
-    img_count = 0
-    tether = False
-
-
+    
     # Assume that sample is set up in center as start point
     for x in range(0, row_len):
         for y in range(0, col_len):
+            # initializing our variables
+            tether = False
+            img_count = 0
+            bubble_count = 0
+            dark_area = 0 
             
             # run while tether not found
             while not tether:
                 time.sleep(120)
                 
-                bubble_count = 0
-                dark_area = 0
-                
                 # take picture through scope
-                image_name = Functions.take_image(1, " ")   
+                image_name = Functions.take_image(img_count, " ")   
                 print(image_name)
                 
-                # square placement
+                # check whether the etch is in process or on a new square
                 if (siglent.get_output() == 0):
-                    # if etch has not started check that it's within camera space and on the red cross close enough
-                    Functions.square_detect()
-                else:
-                    # if etch has started and etch is leaning one way instead of evenly find where out where.
-                    Functions.area_detect()
+                    square_coor = Functions.square_detect(image_name)
+                    Functions.probe_adjustment(square_coor)
                     
-                # move probes according to full square or partial etch
-                Functions.probe_adjustment()
-                
-                # beginning of etch
-                if dark_area > 97:
-                    siglent.output_on()
+                    if Functions.area_detect(image_name) > 97:
+                        siglent.output_on()
+                else:
+                    square_coor = Functions.square_detect(image_name)
+                    
+                    # move probes according to full square or partial etch
+                    Functions.probe_adjustment()
+                    
+                    Functions.area_detect(image_name) 
                 
                 # detect bubble
                 bubble_count = Functions.bubble_detect(bubble_count, image_name)
