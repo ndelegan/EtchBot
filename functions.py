@@ -258,10 +258,6 @@ def probe_adjustment(imagePath):
                 rightProbe = tuple(approx[1][0])
             else:
                 leftProbe = tuple(approx[1][0])
-        
-            
-            # Prints the coordinates
-            # print("Point:", point)
             
             img = cv2.drawContours(image, [cnt], -1, (0,255,255), 3)
             
