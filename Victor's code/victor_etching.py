@@ -1,30 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
-##plan
-#Use cell almost as-is for first-image identification
-#Image is captured and analyzed; user click to approve, or adjust and retry
-
-##analysis
-# area change over last 10
-# fit the diagonal to a line and track its motion
-
-
-# start by getting color. compare average color within contour to target color, disregard if doesn't match within a cushion
-
-2/2/2024
-# print out the bilateral blurring and see how it looks
-
-2/3/2024
-#draw a line from upper_left to upper_left[0], bottom_right[1] and turn everything above it into 255,255,255
-
-
-# In[103]:
-
-
 #turn this code into a draw_rectangle function
 
 
@@ -457,9 +430,7 @@ for i, file_name in enumerate(image_files[first_image_index - 1:last_image_index
 # gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
 
 
-# 19# print(x_coords)
-
-# In[124]:
+### this is for plotting the remaining area. Fitting the result to a line can give the etch rate
 
 
 fig, ax = plt.subplots(figsize=(8,5))
@@ -473,10 +444,3 @@ ax.scatter(num, all_areas, s=7)
 
 ax.set_xlabel('Frame', fontsize=20)
 ax.set_ylabel('Contour Area (pixels)', fontsize=20)
-
-
-# In[ ]:
-
-
-
-
