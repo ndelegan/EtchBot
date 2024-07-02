@@ -3,7 +3,11 @@
 
 # In[ ]:
 
-
+'''
+This code runs on an image stack. It prompts the user to give a path to a folder where the images are stored, then runs the analysis from the first to last image (specified by the user).
+To convert this into a real-time analysis would require loading the images differently.
+This was created with/for and runs well on the set of images I am uploading in a folder called "victor_etching_images"
+'''
 ##plan
 #Use cell almost as-is for first-image identification
 #Image is captured and analyzed; user click to approve, or adjust and retry
