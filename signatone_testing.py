@@ -3,7 +3,7 @@ import unittest
 from io import StringIO
 from contextlib import redirect_stdout
 #To-Do - make it to be able to test different devices
-#and make it user-friendly :)
+#and make it user-friendly :) print if the tests were successfully
 class SignatoneTest(unittest.TestCase):
     def setUp(self):
         self.my_string = 'Device name'
