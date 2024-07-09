@@ -8,6 +8,7 @@ class SiglentTest(unittest.TestCase):
 		setVoltage = device.set_volt(1)
 		check =device.getoutput()
 		self.assert(check,set)
+		device.output_off()
 	def testingonnoff(self):
 		device = Siglent_Driver.Siglent()
 		on = device.output_on()
