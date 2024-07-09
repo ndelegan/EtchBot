@@ -18,16 +18,19 @@ Current Progress Made:
  - Bubble Bot (Recognition + Sending a Slack Message)
  - Tether Bot (Recognition + Sending a Slack Message)
  - Signatone and Siglent Device Driver
- - Diamond Square Recognition
- - Pre-Etch: Partially detects squares not all in an image
- - Post Etch: Can detect leftover area when image is cropped for a single square (about 7% dark area left at the moment)
+ - Pre-Etch: Detects the square
+ - Post Etch: Can detect leftover area when image is cropped for a single square (about 7% dark area left)
+ - Github localization
+ - Etching File combining all bots and functions is made
+ - Water Pump by itself works
 
 Images:
 
 To-Do
- - Combine separate coding segments into concise python file called etching automation
- - Create documentation for etching automation file, pyvisa x scpi commands.
- - Motor Pump
- - Set up Github Repo
- - Download VSCode, Git, Github Desktop onto remote desktop, CV2 (use this line of code → pip install opencv-contrib-python)
- - Refine already existing code
+ - Refine existing code
+ - Use GDS files to pull measurements
+ - Convert pixel to device coordinates
+ - Start moving from initial membrane to another
+ - Use robust and formal testing
+ - Menu options
+ - Remotely Etching
