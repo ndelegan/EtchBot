@@ -212,11 +212,6 @@ def send_slack_message(webhook_url, message):
         result : copy of original image with detected squares superimposed (also displayed on screen) # may change later
     Raises:
         No errors. Assumes that all devices are operating correctly.
-    Citations: 
-        https://stackoverflow.com/questions/55169645/square-detection-in-image,
-        https://www.tutorialspoint.com/how-to-detect-a-rectangle-and-square-in-an-image-using-opencv-python, 
-        https://opencv24-python-tutorials.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_thresholding/
-            py_thresholding.html#otsus-binarization
             
 """
 def square_detect(image): 
