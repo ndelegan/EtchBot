@@ -15,3 +15,5 @@ class SiglentTest(unittest.TestCase):
 		off = device.output_off()
 		check=device.get_output()
 		self.assert(0,check)
+if __name__ == "__main__":
+    unittest.main()
