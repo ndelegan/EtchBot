@@ -25,13 +25,13 @@ import numpy as np
 
 """
     
-    take_image : 
+    take_image : takes an image and saves it in a certain file path
     
     Args:
         counter : integer
         filename : string
     Returns:
-        None.
+        filename : string -> file path of image
     Raises:
         None.
     Citations: 
@@ -48,7 +48,7 @@ def take_image(counter,filename):
 
 """
     
-    delete_image : 
+    delete_image : deletes an image from a given file path
     
     Args:
         counter : integer
@@ -73,13 +73,13 @@ def delete_image(counter, filename):
 
 """
     
-    bubble_detect : 
+    bubble_detect : detect bubbles in a given image
     
     Args:
         bubble_count : integer
         image_name : string
     Returns:
-        None.
+        bubble_count : integer -> hw many bubbles were found
     Raises:
         None.
     Citations: 
@@ -125,12 +125,12 @@ def bubble_detect(bubble_count, image_name):
 
 """
     
-    area_detect : 
+    area_detect : detects the percentage of the square given
     
     Args:
         None.
     Returns:
-        None.
+        whole_number_percentage : integer -> percentge of area not etched
     Raises:
         None.
     Citations: 
@@ -172,7 +172,7 @@ def area_detect(imagePath):
 
 """
     
-    send_slack_message : 
+    send_slack_message : sends a slack message to a certain slack channel
     
     Args:
         webhook_url : string
@@ -252,6 +252,20 @@ def square_detect(image):
     return detected, result
 
 
+"""
+
+    probe adjustment : detecs the probes and adjusts their placement
+
+    Args:
+        imagePath : string
+    Returns:
+        detected : boolean -> true if a square is found, false otherwise
+        rightProbe : array -> probe coordinates
+        leftProbe : array -> probe coordinates
+    Raises:
+        No errors. Assumes that all devices are operating correctly.
+            
+"""
 def probe_adjustment(imagePath):
     detected = False
     
@@ -294,8 +308,6 @@ def probe_adjustment(imagePath):
                 x = int(M['m10']/M['m00'])
                 y = int(M['m01']/M['m00'])
                 cv2.putText(img, combined_string, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
-
-            
 
     if count == 2:
         detected = True

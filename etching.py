@@ -13,6 +13,22 @@ import siglent_driver as Siglent
 import signatone_driver as Signatone
 import functions as Functions
 
+
+"""
+
+    cut : etches a single membrane
+    
+    Args:
+        siglent : object
+        signatone : object
+    Returns:
+        None.
+    Raises:
+        None.
+    Citations: 
+        None. 
+
+"""
 def cut(siglent, signatone):
     # slack channel urls
     bubble_url = 'https://hooks.slack.com/services/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'
@@ -65,6 +81,21 @@ def cut(siglent, signatone):
                 Functions.send_slack_message("Tether Minimum Reached! Etch Complete.")
     
     
+"""
+
+    full_membrane : runs the cut function for a full membrane
+    
+    Args:
+        row_len : integer
+        col_len : integer
+    Returns:
+        None.
+    Raises:
+        None.
+    Citations: 
+        None. 
+
+"""
 def full_membrane(row_len, col_len):
     # setting up our devices
     siglent = Siglent.Siglent()
