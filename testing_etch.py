@@ -2,6 +2,7 @@ import functions as func
 import signatone_driver as Signatone
 import siglent_driver as Siglent
 import time
+
 def main():
     filename = None
     siglent_var = Siglent.Siglent()
@@ -15,5 +16,6 @@ def main():
     if stop == "e":
         siglent_var.reset_values()
         siglent_var.output_off()
+        
 if __name__ == '__main__':
     main()
