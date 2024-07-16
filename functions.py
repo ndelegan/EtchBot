@@ -138,7 +138,7 @@ def bubble_detect(bubble_count, image_name):
         None.
     
 """
-def area_detect(imagePath):
+def areaDetectNonColor(imagePath):
    #Read in image location
     image = cv2.imread(imagePath)
     # img = np.zeros(image.shape, image.dtype)
@@ -169,6 +169,59 @@ def area_detect(imagePath):
     whole_number_percentage = int(percentage_black)
 
     return whole_number_percentage
+
+
+"""
+        Args:
+            imageDestination: file path of picture
+        Returns:
+            Percentage number
+                                  """
+
+def areaDetectColorBinary(imagePath):
+
+    #Read in image location
+    image = cv2.imread(imagePath)
+    img = np.zeros(image.shape, image.dtype)
+    alpha = 1.2
+    beta = 15
+    img = cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
+
+    #Converts image to gray scale and blurs it
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    blur = cv2.medianBlur(gray, 5)
+    
+    #Sharpens the blurred image
+    sharpen_kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
+    sharpen = cv2.filter2D(blur, -1, sharpen_kernel)
+    
+    #Setting color threshold and cleaning up noise in the picture
+    #157 used for gray membranes
+    #148
+    #172 for no color membranes
+    #110
+    ret3,otsu = cv2.threshold(sharpen,35,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
+    close = cv2.morphologyEx(otsu, cv2.MORPH_CLOSE, kernel, iterations=2)
+    black_threshold = 50
+
+    
+    #Counting black pixels and total pixels
+    black_pixels = np.count_nonzero(close < black_threshold)
+    
+    total_pixels = close.size
+
+    #Calculates percentage of black pixels then shows altered pictures
+    percentage_green = (black_pixels / total_pixels) * 100
+    
+    whole_number_percentage = int(percentage_green)
+    cv2.imshow('close', close)
+    cv2.imshow('gray', gray)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    return whole_number_percentage
+
 
 
 """
