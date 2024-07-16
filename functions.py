@@ -271,10 +271,14 @@ def innermost_square(contours, hierarchy, image, min_size):
     square_detect : square detection of membrane of interest
 
     Args:
-        image : string
+        image : image object to be processed
     Returns:
-        detected : boolean -> true if a square is found, false otherwise
-        result : copy of original image with detected squares superimposed (also displayed on screen) # may change later
+        x : x-coordinate of top left corner of square of interest
+        y : y-coordinate of top left corner of square of interest
+        w : width of square of interest
+        h : height of square of interest        
+        detected : boolean -> true if a square is found, false otherwise (note: under construction)
+        result : copy of original image with detected square superimposed (also displayed on screen) (note: may change later)
     Raises:
         No errors. Assumes that all devices are operating correctly.
             
@@ -297,24 +301,24 @@ def square_detect(image):
     image_binary = cv2.bitwise_not(otsu)
 
     # find contours
-    (contours,_) = cv2.findContours(image_binary, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+    (contours,_) = cv2.findContours(image_binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
     print('Contours: ' , len(contours))
     
-    #draw and show detected squares
-    arg1 = 10
-    for contour in contours:
-        (x,y,w,h) = cv2.boundingRect(contour)
-        if h > arg1 and w > arg1:
-            cv2.rectangle(image_copy, (x,y), (x+w,y+h),(0,255,0), 2)
-            cv2.circle(image_copy, (x, y), 3 ,255, -1) # put a dot on upper left corner
-            cv2.circle(image_copy, (x+w, y+h), 3 ,255, -1) # put a dot on lower right corner
-            detected = True
+    # identify innermost square of min size (membrane) and identify corners
+    min_size = 10
+    x, y, w, h, image_rect = innermost_square(contours, hierarchy, image_copy, min_size)
+ 
+    cv2.circle(image_rect, (x, y), 3 ,255, -1) # draw a dot on upper left corner
+    cv2.circle(image_rect, (x+w, y+h), 3 ,255, -1) # draw a dot on lower right corner
+    cv2.circle(image_rect, (x, y+h), 3 ,255, -1) # draw a dot on lower left corner
+    cv2.circle(image_rect, (x+w, y), 3 ,255, -1) # draw a dot on upper right corner
+    detected = True # TO DO: fix
 
-    result = cv2.imshow('result',image_copy)
+    result = cv2.imshow('result',image_rect)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     
-    return detected, result
+    return x, y, w, h, detected, result
 
 
 """
