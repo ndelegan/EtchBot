@@ -62,12 +62,14 @@ def take_image(counter,filename):
         None.
     
 """
-def delete_image(counter, filename):
-    string = " C:\\CM400\\photos\\imgCapture"
+def delete_image(counter):
+    string = "C:\\CM400\\photos\\imgCapture"
     string2 = ".bmp"
-    
-    while counter >= 0:
+    while True:
+        if os.path.exists("C:\\CM400\\photos\\imgCapture1.bmp") is False:
+            return False 
         filename = f'{string}{counter}{string2}'
+        print(filename)
         os.remove(filename)
         counter-=1
         
