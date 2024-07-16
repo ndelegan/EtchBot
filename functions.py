@@ -8,6 +8,7 @@
         Area Detect Author(s): Lisette Ruano
         Send Slack Message Author(s): Andrea Munoz
         Square Detect Author(s): Claudia Jimenez, Aima Qutbuddin, Lisette Ruano
+        Innermost Square Author(s): Kyle Cheek, Claudia Jimenez
         
     Collaborator(s): Argonne National Laboratory (Nazar Delegan, Clayton Devault), Kyle Cheek
     Date Created: 06/26/2024
@@ -200,6 +201,70 @@ def send_slack_message(webhook_url, message):
     else:
         print(f'Failed to send message to Slack. Error: {response.status_code}, {response.text}')
 
+
+"""
+    
+    innermost_square : returns the most deeply nested square w/ minimum size (square of interest)
+    TO DO: add more comments, clean up busy logic lines
+    
+    Args:
+        contours : list of list of points that make up a contour (returned by findContours()) 
+        hierarchy : list of indices of contours passed in hierarchical order (returned by findContours()) 
+        image : image object to draw rectangle on
+        min_size : minimum edge length of square to detect
+    Returns:
+        x1 : x-coordinate of top left corner of square of interest
+        y1 : y-coordinate of top left corner of square of interest
+        w1 : width of square of interest
+        h1 : height of square of interest
+        image : image with rectangle drawn on
+    Raises:
+        None.
+    
+"""
+def innermost_square(contours, hierarchy, image, min_size):
+
+    rects = [] # list for all rectangles detected
+    
+    # isolate all rectangles in contours
+    for contour in range(len(contours)):
+        (x,y,w,h) = cv2.boundingRect(contours[contour])
+        rects.append((x,y,w,h))
+
+    # make a list of all parent rectangles based on hierarchy, then sort from most to least deeply nested 
+    # note: parents are sorted in hierarchical order but children are not sorted as particularly,
+    # so here it is easier to sort and search by parents than by children
+    parents_list = set([item[3] for items in hierarchy for item in items]) # TO DO: clean up
+    parents_sorted_list = sorted(parents_list, reverse=True)
+
+    # add parent candidates to list only if above minimum size 
+    parent_candidates = []
+    for i in parents_sorted_list:
+        if max(rects[i][2],rects[i][3]) > min_size:
+            parent_candidates.append(i)
+
+    max_parent_candidate = max(parent_candidates) # most deeply nested parent
+
+    # find children of minimum size and of most deeply nested parent
+    child_list = []
+    for (index, contour) in enumerate(hierarchy[0]):
+        if (contour[3] == max_parent_candidate) and (min(rects[index][2],rects[index][3]) > min_size):
+            child_list.append(index)
+
+    # if there are child candidates, pick the most deeply nested child of the most deeply nested parent 
+    # or pick the most deeply nested parent (could happen if its children do not meet min size)
+    if len(child_list) > 0:
+        max_child_candidate = max(child_list)
+        deepest_sufficient_contour = max(max_parent_candidate, max_child_candidate)
+    # if no child candidates, pick the most deeply nested parent 
+    else:
+        deepest_sufficient_contour = max_parent_candidate
+
+    # get x,y of top left corner, width, and height of square of interest, draw rectangle
+    (x1,y1,w1,h1) = rects[deepest_sufficient_contour]
+    cv2.rectangle(image, (x1,y1), (x1+w1,y1+h1), (0,255,0), 2)
+
+    return x1, y1, w1, h1, image
 
 """
 
