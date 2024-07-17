@@ -9,6 +9,7 @@
 """
 
 import time
+import keyboard
 import siglent_driver as Siglent
 import signatone_driver as Signatone
 import functions as Functions
@@ -16,7 +17,7 @@ import functions as Functions
 
 """
 
-    cut : etches a single membrane
+    etch_one_membrane : etches a single membrane
     
     Args:
         siglent : object
@@ -29,61 +30,82 @@ import functions as Functions
         None. 
 
 """
-def cut(siglent, signatone):
+def etch_one_membrane(siglent, signatone):
     # slack channel urls
     bubble_url = 'https://hooks.slack.com/services/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'
     area_url = 'https://hooks.slack.com/services/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'
     
     # initializing our variables
+    start_time = time.time()
     tether = False
     img_count = 0
-    bubble_count = 0
-    dark_area = 0 
+    # bubble_count = 0
+    # dark_area = 0 
             
     # run while tether not found
-    while not tether:
-        time.sleep(120)
-                
-        # take picture through scope
-        image_name = Functions.take_image(img_count, " ")   
-        print(image_name)
-                
-        # check whether the etch is in process or on a new square
-        if (siglent.get_output() == 0):
-            square_coor = Functions.square_detect(image_name)
-            Functions.probe_adjustment(square_coor)
+    while True:
+        # get the current time
+        curr_time = time.time()
+        
+        bubble_count = 0
+        dark_area = 0 
+        
+        # if 20 seconds have passed, check on the membrane
+        if curr_time - start_time > 20:
+            img_count+=1
+            
+            # take picture through scope
+            image_name = Functions.take_image(img_count, " ")
+            signatone.save_image(image_name)
+            print(image_name)
                     
-            if Functions.area_detect(image_name) > 97:
-                siglent.output_on()
-            else:
+            # check whether the etch is in process or on a new square
+            if (siglent.get_output() == 0):
                 square_coor = Functions.square_detect(image_name)
+                Functions.probe_adjustment(square_coor)
+                        
+                if Functions.area_detect(image_name) > 97:
+                    siglent.output_on()
+                else:
+                    square_coor = Functions.square_detect(image_name)
+                        
+                    # move probes according to full square or partial etch
+                    Functions.probe_adjustment(image_name)
+                        
+                    Functions.area_detect(image_name) 
                     
-                # move probes according to full square or partial etch
-                Functions.probe_adjustment(image_name)
-                    
-                Functions.area_detect(image_name) 
-                
-            # detect bubble and clean 
-            while bubble_count > 0:
-                bubble_count = Functions.bubble_detect(bubble_count, image_name)
+                # detect bubble and clean 
+                while bubble_count > 0:
+                    bubble_count = Functions.bubble_detect(bubble_count, image_name)
 
-                # check if bubbles are gone
-                if bubble_count > 0:
-                    Functions.send_slack_message("Bubble Obstruction!")
-                    # water pump
-                
-            # check tether percentage
-            Functions.area_detect()
-                
-            # end of etch
-            if dark_area <= 7:
+                    # check if bubbles are gone
+                    if bubble_count > 0:
+                        Functions.send_slack_message("Bubble Obstruction!")
+                        # water pump
+                    
+                # check tether percentage
+                Functions.area_detect()
+                    
+                # end of etch
+                if dark_area <= 7:
+                    siglent.output_off()
+                    Functions.send_slack_message("Tether Minimum Reached! Etch Complete.")
+            
+            # keyboard waits for you to press 'q' if you want to end etch early
+            if keyboard.is_pressed('q'):
+                siglent.reset_values()
                 siglent.output_off()
-                Functions.send_slack_message("Tether Minimum Reached! Etch Complete.")
-    
+                break
+            
+    Functions.delete_image(img_count)
+    siglent.reset_values()
+    siglent.output_off()
+    print("single etch end")
+
     
 """
 
-    full_membrane : runs the cut function for a full membrane
+    full_grid_etch : runs the cut function for a full membrane
     
     Args:
         row_len : integer
@@ -96,7 +118,7 @@ def cut(siglent, signatone):
         None. 
 
 """
-def full_membrane(row_len, col_len):
+def full_grid_etch(row_len, col_len):
     # setting up our devices
     siglent = Siglent.Siglent()
     signatone = Signatone.Signatone()
@@ -104,7 +126,7 @@ def full_membrane(row_len, col_len):
     # Assume that sample is set up in center as start point
     for x in range(0, row_len):
         for y in range(0, col_len):
-            cut(siglent, signatone)
+            etch_one_membrane(siglent, signatone)
                     
         # move to next square
         

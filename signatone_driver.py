@@ -187,6 +187,7 @@ class Signatone:
     """
     def save_image(self, path):
         save = "SAVEIMAGE " + path
+        print(save)
         self.device.query(save)
 
 

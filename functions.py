@@ -39,13 +39,12 @@ import numpy as np
         None.
     
 """
-def take_image(counter,filename):
-    string = " C:\\CM400\\photos\\imgCapture"
+def take_image(counter:int, filename):
+    string = "C:\\CM400\\photos\\imgCapture"
     string2 = ".bmp"
     filename = f'{string}{counter}{string2}'
-    mini_str = "imgCapture"
-    specified_filename = f'{mini_str}{counter}{string2}'
     return filename
+
 
 """
     
@@ -73,6 +72,30 @@ def delete_image(counter):
         os.remove(filename)
         counter-=1
         
+        
+"""
+    
+    crop_image : given a image path it crops the image, saves it and returns the path
+    
+    Args:
+        counter : integer
+        filename : string
+    Returns:
+        None.
+    Raises:
+        None.
+    Citations: 
+        None.
+    
+"""
+def crop_image(start_x, start_y, new_w, new_h, pixel_w, pixel_h, img_path):
+    image = cv2.imread(img_path)
+    zoom = cv2.resize(image, (new_w, new_h))
+    
+    crop = zoom[start_y : start_y+pixel_h, start_x : start_x+pixel_w]
+    cv2.imshow
+    
+        
 
 """
     
@@ -90,10 +113,9 @@ def delete_image(counter):
     
 """
 def bubble_detect(bubble_count, image_name):
-    #Image Path Declaration
-    image_path = "C:\\Users\\AdminUser\\Downloads" + image_name
     # image_path = os.path.join(path_root, 'Downloads', filename)
-    img = cv2.imread(image_path)
+    img = cv2.imread(image_name)
+    print(image_name)
     #converting image to grayscale
     img_gray  = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     #Blurring the image for image processing
@@ -174,12 +196,19 @@ def areaDetectNonColor(imagePath):
 
 
 """
-        Args:
-            imageDestination: file path of picture
-        Returns:
-            Percentage number
-                                  """
-
+    
+    areaDetectColorBinary : 
+    
+    Args:
+        image_path : file path of an image
+    Returns:
+        whole_number_percentage : 
+    Raises:
+        None.
+    Citations: 
+        None.
+    
+"""
 def areaDetectColorBinary(imagePath):
 
     #Read in image location
@@ -225,7 +254,6 @@ def areaDetectColorBinary(imagePath):
     return whole_number_percentage
 
 
-
 """
     
     send_slack_message : sends a slack message to a certain slack channel
@@ -263,16 +291,16 @@ def send_slack_message(webhook_url, message):
     TO DO: add more comments, clean up busy logic lines
     
     Args:
-        contours : list of list of points that make up a contour (returned by findContours()) 
-        hierarchy : list of indices of contours passed in hierarchical order (returned by findContours()) 
-        image : image object to draw rectangle on
+        contours : list -> list of list of points that make up a contour (returned by findContours()) 
+        hierarchy : list -> list of indices of contours passed in hierarchical order (returned by findContours()) 
+        image : string -> image path of a given image
         min_size : minimum edge length of square to detect
     Returns:
-        x1 : x-coordinate of top left corner of square of interest
-        y1 : y-coordinate of top left corner of square of interest
-        w1 : width of square of interest
-        h1 : height of square of interest
-        image : image with rectangle drawn on
+        x1 : integer -> x-coordinate of top left corner of square of interest
+        y1 : integer -> y-coordinate of top left corner of square of interest
+        w1 : integer -> width of square of interest
+        h1 : integer -> height of square of interest
+        image : string -> image path of the original given image with a rectangle drawn on
     Raises:
         None.
     
@@ -321,19 +349,20 @@ def innermost_square(contours, hierarchy, image, min_size):
 
     return x1, y1, w1, h1, image
 
+
 """
 
-    square_detect : square detection of membrane of interest
+    square_detect : detects whether there is a square in a given image
 
     Args:
         image : image object to be processed
     Returns:
-        x : x-coordinate of top left corner of square of interest
-        y : y-coordinate of top left corner of square of interest
-        w : width of square of interest
-        h : height of square of interest        
+        x : integer -> x-coordinate of top left corner of square of interest
+        y : integer -> y-coordinate of top left corner of square of interest
+        w : integer -> width of square of interest
+        h : integer -> height of square of interest        
         detected : boolean -> true if a square is found, false otherwise (note: under construction)
-        result : copy of original image with detected square superimposed (also displayed on screen) (note: may change later)
+        result : string -> copy of original image with detected square superimposed (also displayed on screen) (note: may change later)
     Raises:
         No errors. Assumes that all devices are operating correctly.
             
