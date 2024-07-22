@@ -36,8 +36,6 @@ import numpy as np
         img_path: string
     Raises:
         None.
-    Citations: 
-        None.
     
 """
 def take_image(counter:int):
@@ -57,8 +55,6 @@ def take_image(counter:int):
     Returns:
         None.
     Raises:
-        None.
-    Citations: 
         None.
     
 """
@@ -85,8 +81,6 @@ def delete_image(counter:int):
         None.
     Raises:
         None.
-    Citations: 
-        None.
     
 """
 def crop_image(start_x, start_y, new_w, new_h, pixel_w, pixel_h, img_path):
@@ -107,8 +101,6 @@ def crop_image(start_x, start_y, new_w, new_h, pixel_w, pixel_h, img_path):
     Returns:
         bubble_count: integer
     Raises:
-        None.
-    Citations: 
         None.
     
 """
@@ -163,8 +155,6 @@ def bubble_detect(bubble_count:int, img_path:str):
         whole_number_percentage: integer
     Raises:
         None.
-    Citations: 
-        None.
     
 """
 def areaDetectNonColor(img_path:str):
@@ -205,8 +195,6 @@ def areaDetectNonColor(img_path:str):
     Returns:
         whole_number_percentage: integer
     Raises:
-        None.
-    Citations: 
         None.
     
 """
@@ -265,8 +253,6 @@ def areaDetectColorBinary(img_path:str):
     Returns:
         None.
     Raises:
-        None.
-    Citations: 
         None.
     
 """
