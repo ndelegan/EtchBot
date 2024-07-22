@@ -5,7 +5,6 @@ import time
 import keyboard
 
 def main():
-    filename = None
     bubble_url = 'https://hooks.slack.com/services/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'
     area_url = 'https://hooks.slack.com/services/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'
     signatone = Signatone.Signatone()
@@ -26,7 +25,7 @@ def main():
         
         if curr_time - start_time > 20:
             counter+=1
-            image = func.take_image(counter,filename)
+            image = func.take_image(counter)
             signatone.save_image(image)
             print("image name:", image)
             

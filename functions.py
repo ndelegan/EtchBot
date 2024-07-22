@@ -1,6 +1,6 @@
 """
 
-    Helper functions that are used in the etching process within the 'etching.py' file.
+    Functions that are used in the etching process within the 'etching.py' file.
     
     Each function was written by different students from the UIC Chicago Tech Circle Team:
         Take Image Author(s): Andrea Munoz
@@ -10,7 +10,9 @@
         Square Detect Author(s): Claudia Jimenez, Aima Qutbuddin, Lisette Ruano
         Innermost Square Author(s): Kyle Cheek, Claudia Jimenez
         
-    Collaborator(s): Argonne National Laboratory (Nazar Delegan, Clayton Devault), Kyle Cheek
+    Commenting/Code Structure was implemented by Lisset Rico.
+        
+    Collaborator(s): Argonne National Laboratory (Nazar Delegan, Clayton Devault), Break Through Tech (Kyle Cheek)
     Date Created: 06/26/2024
 
 """
@@ -26,33 +28,32 @@ import numpy as np
 
 """
     
-    take_image : takes an image and saves it in a certain file path
+    take_image : takes an image and saves it in a certain file path.
     
     Args:
-        counter : integer
-        filename : string
+        counter: integer
     Returns:
-        filename : string -> file path of image
+        img_path: string
     Raises:
         None.
     Citations: 
         None.
     
 """
-def take_image(counter:int, filename):
+def take_image(counter:int):
     string = "C:\\CM400\\photos\\imgCapture"
     string2 = ".bmp"
-    filename = f'{string}{counter}{string2}'
-    return filename
+    img_path = f'{string}{counter}{string2}'
+    
+    return img_path
 
 
 """
     
-    delete_image : deletes an image from a given file path
+    delete_image : deletes an image from a given file path.
     
     Args:
-        counter : integer
-        filename : string
+        counter: integer
     Returns:
         None.
     Raises:
@@ -61,9 +62,10 @@ def take_image(counter:int, filename):
         None.
     
 """
-def delete_image(counter):
+def delete_image(counter:int):
     string = "C:\\CM400\\photos\\imgCapture"
     string2 = ".bmp"
+    
     while True:
         if os.path.exists("C:\\CM400\\photos\\imgCapture1.bmp") is False:
             return False 
@@ -75,11 +77,10 @@ def delete_image(counter):
         
 """
     
-    crop_image : given a image path it crops the image, saves it and returns the path
+    crop_image : given a image path it crops the image, saves it and returns the path.
     
     Args:
-        counter : integer
-        filename : string
+        tbd
     Returns:
         None.
     Raises:
@@ -94,41 +95,43 @@ def crop_image(start_x, start_y, new_w, new_h, pixel_w, pixel_h, img_path):
     
     crop = zoom[start_y : start_y+pixel_h, start_x : start_x+pixel_w]
     cv2.imshow
-    
-        
+     
 
 """
     
-    bubble_detect : detect bubbles in a given image
+    bubble_detect : detect bubbles in a given image.
     
     Args:
-        bubble_count : integer
-        image_name : string
+        bubble_count: integer
+        img_path: string
     Returns:
-        bubble_count : integer -> hw many bubbles were found
+        bubble_count: integer
     Raises:
         None.
     Citations: 
         None.
     
 """
-def bubble_detect(bubble_count, image_name):
-    # image_path = os.path.join(path_root, 'Downloads', filename)
-    img = cv2.imread(image_name)
-    print(image_name)
-    #converting image to grayscale
+def bubble_detect(bubble_count:int, img_path:str):
+    img = cv2.imread(img_path)
+    print(img_path)
+    
+    # converting image to grayscale
     img_gray  = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-    #Blurring the image for image processing
+    
+    # blurring the image for image processing
     img_blur = cv2.blur(img_gray, (25,5))
-    #detects circles
+    
+    # detects circles
     detected_circles = cv2.HoughCircles(img_blur, cv2.HOUGH_GRADIENT, .1, 100, param1 = 27, param2 = 31, minRadius=0, maxRadius=300)
-    #counts the amount of circles in the list
+    
+    # counts the amount of circles in the list
     len(detected_circles)
-    detected_circles
-    #used for drawing circles
+    
+    # used for drawing circles
     np.uint16(np.around(detected_circles))
     
-    #draws image. this section if/for loop is not necessary for automation and can be cmmmented out
+    # draws image. this section if/for loop is not necessary for automation and can be cmmmented out
     if detected_circles is not None:
         detected_circles = np.uint16(np.around(detected_circles))
 
@@ -139,56 +142,54 @@ def bubble_detect(bubble_count, image_name):
             
     bubble_count = 0
     for c in detected_circles[0, :]:
-        #draws the outer green circle to show what bubble is detected.
-        #you can comment out both cv2.circle commands.
+        # draws the outer green circle to show what bubble is detected.
+        # you can comment out both cv2.circle commands.
         cv2.circle(img, (c[0], c[1]), c[2], (0, 255, 0), 3)
-        #draws the inner red dot in the center of the detected circle.
+        
+        # draws the inner red dot in the center of the detected circle.
         cv2.circle(img, (c[0], c[1]), 1, (0, 0, 255), 5)
         bubble_count += 1
+        
     return bubble_count
 
 
 """
     
-    area_detect : detects the percentage of the square given
+    area_detect : detects the percentage of the unetched area of a square given.
     
     Args:
-        None.
+        img_path: string
     Returns:
-        whole_number_percentage : integer -> percentge of area not etched
+        whole_number_percentage: integer
     Raises:
         None.
     Citations: 
         None.
     
 """
-def areaDetectNonColor(imagePath):
-   #Read in image location
-    image = cv2.imread(imagePath)
-    # img = np.zeros(image.shape, image.dtype)
-    # alpha = 2.0
-    # beta = 30
-    # img = cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
+def areaDetectNonColor(img_path:str):
+    # Read in image location
+    image = cv2.imread(img_path)
 
-    #Converts image to gray scale and blurs it
+    # Converts image to gray scale and blurs it
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     blur = cv2.medianBlur(gray, 5)
     
-    #Sharpens the blurred image
+    # Sharpens the blurred image
     sharpen_kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
     sharpen = cv2.filter2D(blur, -1, sharpen_kernel)
     
-    #Setting color threshold and cleaning up noise in the picture
+    # Setting color threshold and cleaning up noise in the picture
     thresh = cv2.threshold(blur, 148, 255, cv2.THRESH_BINARY_INV)[1]
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
     close = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel, iterations=2)
     black_threshold = 50
 
-    #Counting black pixels and total pixels
+    # Counting black pixels and total pixels
     black_pixels = np.count_nonzero(close < black_threshold)
     total_pixels = close.size
 
-    #Calculates percentage of black pixels then shows altered pictures
+    # Calculates percentage of black pixels then shows altered pictures
     percentage_black = (black_pixels / total_pixels) * 100
     whole_number_percentage = int(percentage_black)
 
@@ -200,49 +201,49 @@ def areaDetectNonColor(imagePath):
     areaDetectColorBinary : 
     
     Args:
-        image_path : file path of an image
+        img_path: string
     Returns:
-        whole_number_percentage : 
+        whole_number_percentage: integer
     Raises:
         None.
     Citations: 
         None.
     
 """
-def areaDetectColorBinary(imagePath):
+def areaDetectColorBinary(img_path:str):
 
-    #Read in image location
-    image = cv2.imread(imagePath)
+    # read in image location
+    image = cv2.imread(img_path)
     img = np.zeros(image.shape, image.dtype)
     alpha = 1.2
     beta = 15
     img = cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
 
-    #Converts image to gray scale and blurs it
+    # converts image to gray scale and blurs it
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     blur = cv2.medianBlur(gray, 5)
     
-    #Sharpens the blurred image
+    # Sharpens the blurred image
     sharpen_kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
     sharpen = cv2.filter2D(blur, -1, sharpen_kernel)
     
-    #Setting color threshold and cleaning up noise in the picture
-    #157 used for gray membranes
-    #148
-    #172 for no color membranes
-    #110
+    # Setting color threshold and cleaning up noise in the picture
+    # 157 used for gray membranes
+    # 148
+    # 172 for no color membranes
+    # 110
     ret3,otsu = cv2.threshold(sharpen,35,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
     close = cv2.morphologyEx(otsu, cv2.MORPH_CLOSE, kernel, iterations=2)
     black_threshold = 50
 
     
-    #Counting black pixels and total pixels
+    # Counting black pixels and total pixels
     black_pixels = np.count_nonzero(close < black_threshold)
     
     total_pixels = close.size
 
-    #Calculates percentage of black pixels then shows altered pictures
+    # Calculates percentage of black pixels then shows altered pictures
     percentage_green = (black_pixels / total_pixels) * 100
     
     whole_number_percentage = int(percentage_green)
@@ -256,11 +257,11 @@ def areaDetectColorBinary(imagePath):
 
 """
     
-    send_slack_message : sends a slack message to a certain slack channel
+    send_slack_message : sends a slack message to a certain slack channel.
     
     Args:
-        webhook_url : string
-        message : string
+        webhook_url: string
+        message: string
     Returns:
         None.
     Raises:
@@ -269,7 +270,7 @@ def areaDetectColorBinary(imagePath):
         None.
     
 """
-def send_slack_message(webhook_url, message):
+def send_slack_message(webhook_url:str, message:str):
     #Defining JSON
     headers = {'Content-Type': 'application/json'}
     #dictionary payload with message
@@ -291,21 +292,21 @@ def send_slack_message(webhook_url, message):
     TO DO: add more comments, clean up busy logic lines
     
     Args:
-        contours : list -> list of list of points that make up a contour (returned by findContours()) 
-        hierarchy : list -> list of indices of contours passed in hierarchical order (returned by findContours()) 
-        image : string -> image path of a given image
-        min_size : minimum edge length of square to detect
+        contours: list -> list of list of points that make up a contour (returned by findContours()) 
+        hierarchy: list -> list of indices of contours passed in hierarchical order (returned by findContours()) 
+        image: string -> image path of a given image
+        min_size: integer -> minimum edge length of square to detect
     Returns:
-        x1 : integer -> x-coordinate of top left corner of square of interest
-        y1 : integer -> y-coordinate of top left corner of square of interest
-        w1 : integer -> width of square of interest
-        h1 : integer -> height of square of interest
-        image : string -> image path of the original given image with a rectangle drawn on
+        x1: integer -> x-coordinate of top left corner of square of interest
+        y1: integer -> y-coordinate of top left corner of square of interest
+        w1: integer -> width of square of interest
+        h1: integer -> height of square of interest
+        image: string -> image path of the original given image with a rectangle drawn on
     Raises:
         None.
     
 """
-def innermost_square(contours, hierarchy, image, min_size):
+def innermost_square(contours, hierarchy, image:str, min_size:int):
 
     rects = [] # list for all rectangles detected
     
@@ -355,14 +356,14 @@ def innermost_square(contours, hierarchy, image, min_size):
     square_detect : detects whether there is a square in a given image
 
     Args:
-        image : image object to be processed
+        image: string -> path of image to be processed
     Returns:
-        x : integer -> x-coordinate of top left corner of square of interest
-        y : integer -> y-coordinate of top left corner of square of interest
-        w : integer -> width of square of interest
-        h : integer -> height of square of interest        
-        detected : boolean -> true if a square is found, false otherwise (note: under construction)
-        result : string -> copy of original image with detected square superimposed (also displayed on screen) (note: may change later)
+        x: integer -> x-coordinate of top left corner of square of interest
+        y: integer -> y-coordinate of top left corner of square of interest
+        w: integer -> width of square of interest
+        h: integer -> height of square of interest        
+        detected: boolean -> true if a square is found, false otherwise (note: under construction)
+        result: string -> copy of original image with detected square superimposed (also displayed on screen) (note: may change later)
     Raises:
         No errors. Assumes that all devices are operating correctly.
             
@@ -410,19 +411,19 @@ def square_detect(image):
     probe adjustment : detecs the probes and adjusts their placement
 
     Args:
-        imagePath : string
+        img_path: string -> path of a given image
     Returns:
-        detected : boolean -> true if a square is found, false otherwise
-        rightProbe : array -> probe coordinates
-        leftProbe : array -> probe coordinates
+        detected: boolean -> true if a square is found, false otherwise
+        rightProbe: array -> probe coordinates
+        leftProbe: array -> probe coordinates
     Raises:
         No errors. Assumes that all devices are operating correctly.
             
 """
-def probe_adjustment(imagePath):
+def probe_adjustment(img_path):
     detected = False
     
-    image = cv2.imread(imagePath)
+    image = cv2.imread(img_path)
    
     #Converts picture into grayscale and blurs it
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) 

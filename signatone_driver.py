@@ -2,7 +2,7 @@
 
     Python class called "Signatone" to control the Signatone CAP-946 devices.
 
-    Authors: UIC Chicago Tech Circle Team (Claudia Jimenez, Lisset Rico)
+    Authors: UIC Chicago Tech Circle Team (Lisset Rico, Andrea Munoz, Claudia Jimenez)
     Collaborator(s): Argonne National Laboratory (Nazar Delegan, Clayton Devault)
     Date Created: 06/20/2024
 
@@ -19,19 +19,19 @@ import time
     Signatone Class
 
     Functions:
-        __init__ : connect to device
-        set_home : This sets the current X, Y position of the active device to 0,0
-        set_device : Select the active device for future commands.
-        get_device : returns the selected active device - chuck, scope, cap1, cap2, cap3, cap4
-        get_cap : returns the current x,y,z position of the active device in microns
-        move_rel : Moves the current device to the new position in reference to the current position.
-        move_z : Moves the current selected device to the new absolute Z position in reference to the current Z position.
-        move_xyz : Move the current CAP or the microscope to the specified x, y, z location, or the stage to the specified x, y, z location.
-        save_image : Save the current camera image to the specified file.
-        get_scope : Returns the current X, Y, Z position of the microscope.
-        abort_motion : Abort motion of the current device
-        default_settings : Sets all devices to a 0,0 setting.
-        close : closes connection to device
+        __init__ : connect to device.
+        set_home : this sets the current X, Y position of the active device to 0,0.
+        set_device : select the active device for future commands.
+        get_device : returns the selected active device - chuck, scope, cap1, cap2, cap3, cap4.
+        get_cap : returns the current x,y,z position of the active device in microns.
+        move_rel : moves the current device to the new position in reference to the current position.
+        move_z : moves the current selected device to the new absolute Z position in reference to the current Z position.
+        move_xyz : move the current CAP or the microscope to the specified x, y, z location, or the stage to the specified x, y, z location.
+        save_image : save the current camera image to the specified file.
+        get_scope : returns the current X, Y, Z position of the microscope.
+        abort_motion : abort motion of the current device.
+        default_settings : sets all devices to a 0,0 setting.
+        close : closes connection to device.
 
 """
 
@@ -68,74 +68,80 @@ class Signatone:
 
 
     """
-        set_home : This sets the current X, Y position of the active device to 0,0
+        set_home : this sets the current X, Y position of the active device to 0,0.
 
         Args:
             self: class object
         Returns:
             Empty return.
         Raises:
-            Exception. Prints error if can't connect to device.
+            No errors. Assumes you are connected correctly.
     """
     def set_home(self):
         self.device.query("SETHOME")
 
 
     """
-        set_device : Select the active device for future commands.
+        set_device : select the active device for future commands.
 
         Args:
             self: class object
-            dev: string parameter
+            dev: string
         Returns:
             Empty return.
         Raises:
-            Exception. Prints error if can't connect to device.
+            No errors. Assumes you are connected correctly.
     """
-    def set_device(self, dev):
+    def set_device(self, dev:str):
         device_str = "SETDEVICE " + dev
         self.device.query(device_str)
+        
+        
     """
-    get_device : returns the selected active device - chuck, scope, cap1, cap2, cap3, cap4
-    
-    Args:
-        None
-    Returns:
-        device name 
-    Raises: 
-        Exception. Prints error if can't connect to device.
+        get_device : returns the selected active device - chuck, scope, cap1, cap2, cap3, cap4.
+        
+        Args:
+            None
+        Returns:
+            device: string
+        Raises: 
+            No errors. Assumes you are connected correctly.
     """
     def get_device(self):
         device_str = "GETDEVICE"
         device = self.device.query(device_str)
         return device
+    
+    
     """
-    get_cap : returns the current x,y,z position of the active device in microns
+        get_cap : returns the current x,y,z position of the active device in microns
 
-    Args:
-        None
-    Returns:
-        x,y,z coordinatinates
-    Raises: 
-        Exception. Prints error if can't connect to device.
+        Args:
+            None
+        Returns:
+            position: array 
+        Raises: 
+            No errors. Assumes you are connected correctly.
     """
     def get_cap(self):
         device_str = "GETCAP"
         position = self.device.query(device_str)
         return position
+    
+    
     """
-        move_rel : Moves the current device to the new position in reference to the current position.
+        move_rel : moves the current device to the new position in reference to the current position.
 
         Args:
             self: class object
-            x: int parameter
-            y: int parameter
+            x: integer
+            y: integer
         Returns:
             Empty return.
         Raises:
-            Exception. Prints error if can't connect to device.
+            No errors. Assumes you are connected correctly.
     """
-    def move_rel(self, x, y):
+    def move_rel(self, x:int, y:int):
         move = "MOVEXREL " + x + " " + y
         self.device.query(move)
 
@@ -145,89 +151,89 @@ class Signatone:
 
         Args:
             self: class object
-            amn: int parameter
+            amn: integer
         Returns:
             Empty return.
         Raises:
-            Exception. Prints error if can't connect to device.
+            No errors. Assumes you are connected correctly.
     """
-    def move_z(self, amn):
+    def move_z(self, amn:int):
         z = "MOVEZREL " + amn
         self.device.query(z)
 
 
     """
-        move_xyz : Move the current CAP or the microscope to the specified x, y, z location, or the stage to the specified x, y, z location.
+        move_xyz : move the current CAP or the microscope to the specified x, y, z location, or the stage to the specified x, y, z location.
 
         Args:
             self: class object
-            x: int parameter
-            y: int parameter
-            z: int parameter
+            x: integer
+            y: integer
+            z: integer
         Returns:
             Empty return.
         Raises:
-            Exception. Prints error if can't connect to device.
+            No errors. Assumes you are connected correctly.
     """
-    def move_xyz(self, x, y, z):
+    def move_xyz(self, x:int, y:int, z:int):
         xyz = "MOVEXYZABS " + x + " " + y + " " + z
         self.device.query(xyz)
 
 
     """
-        save_image : Save the current camera image to the specified file.
+        save_image : save the current camera image to the specified file.
 
         Args:
             self: class object
-            path: string parameter
+            path: string
         Returns:
             Empty return.
         Raises:
-            Exception. Prints error if can't connect to device.
+            No errors. Assumes you are connected correctly.
     """
-    def save_image(self, path):
+    def save_image(self, path:str):
         save = "SAVEIMAGE " + path
         print(save)
         self.device.query(save)
 
 
     """
-        get_scope : Returns the current X, Y, Z position of the microscope.
+        get_scope : returns the current X, Y, Z position of the microscope.
 
         Args:
             self: class object
         Returns:
             Current x, y, z location of the microscrope as an array.
         Raises:
-            Exception. Prints error if can't connect to device.
+            No errors. Assumes you are connected correctly.
     """
     def get_scope(self):
         return self.device.query("GETSCOPE")
 
 
     """
-        abort_motion : Abort motion of the current device
+        abort_motion : Abort motion of the current device.
 
         Args:
             self: class object
         Returns:
             Empty return.
         Raises:
-            Exception. Prints error if can't connect to device.
+            No errors. Assumes you are connected correctly.
     """
     def abort_motion(self):
         self.device.query("ABORTMOTION")
 
 
     """
-        default_settings : Sets all devices to a 0,0 setting.
+        default_settings : sets all devices to a 0,0 setting.
 
         Args:
             self: class object
         Returns:
             Empty return.
         Raises:
-            Exception. Prints error if can't connect to device.
+            No errors. Assumes you are connected correctly.
     """
     def default_settings(self):
         self.device.query("SETDEVICE SCOPE")
@@ -242,14 +248,14 @@ class Signatone:
 
 
     """
-        close : closes connection to device
+        close : closes connection to device.
 
         Args:
             self: class object
         Returns:
             Empty return.
         Raises:
-            Exception. Prints error if can't connect to device.
+            No errors. Assumes you are connected correctly.
     """
     def close(self):
         self.device.close()

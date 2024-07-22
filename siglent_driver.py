@@ -14,17 +14,16 @@ import time
 """Siglent Class
 
     Functions:
-        __init__ : connect to device
-        set_volt : set device voltage
-        set_curr : set device current
-        output_on : turn on voltage output
-        output_off : turn off voltage output
-        get_ouput : return current voltage output
-        reset_values : set voltage and current to 0
-        close : closes connection to device
+        __init__ : connect to device.
+        set_volt : set device voltage.
+        set_curr : set device current.
+        output_on : turn on voltage output.
+        output_off : turn off voltage output.
+        get_ouput : return current voltage output.
+        reset_values : set voltage and current to 0.
+        close : closes connection to device.
 
 """
-
 class Siglent:
     """
         __init__ : connect to device
