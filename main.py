@@ -9,7 +9,7 @@
 """
 
 import etching as Etching
-import water_pump as Water
+# import water_pump as Water
 
 opt = ''
 
@@ -17,15 +17,22 @@ print('Welcome to Etch Bot!')
 
 # while loop for menu options
 while opt != 'x':
-    print('Select an Option (Enter the number of the option): ')
+    print('Etch Bot Options: ')
     print('   1. Etch a Grid')
     print('   2. Reset Devices')
     print('   3. Quit (press x)')
+    
+    opt = input('Select an Option (Enter the number of the option): ')
     if opt == '1':
-        print('Attention: Be sure that probes are set a safe distance away to start and voltage is off.')
-        # etch full grid, not ready yet
-        # etch one square but probes aren't aligned
+        print('Attention!')
+        print('   Be sure that probes are set a safe distance away to start and voltage is off.')
+        print('   Current program only etches one square assuming: probes are aligned with square membrane and a person is taking care of the bubbles.')
+        print('   For rows and cols inputs only enter 1.')
+        
         # etch one square, assuming device setup correctly
+        # etch one square but probes aren't aligned
+        
+        # etch full grid, not ready yet
         row = input("How many rows are in the grid?")
         col = input("How many cols are in the grid?")
         Etching.full_grid_etch(row, col)

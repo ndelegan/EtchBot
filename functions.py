@@ -8,7 +8,7 @@
         Area Detect Author(s): Lisette Ruano
         Send Slack Message Author(s): Andrea Munoz
         Square Detect Author(s): Claudia Jimenez, Aima Qutbuddin, Lisette Ruano
-        Innermost Square Author(s): Kyle Cheek, Claudia Jimenez
+        Innermost Square Author(s): Claudia Jimenez
         
     Commenting/Code Structure was implemented by Lisset Rico.
         
@@ -354,7 +354,8 @@ def innermost_square(contours, hierarchy, image:str, min_size:int):
         No errors. Assumes that all devices are operating correctly.
             
 """
-def square_detect(image): 
+def square_detect(img_path):
+    image = cv2.imread(img_path)
     image_copy = image.copy()
     detected = False
     
@@ -377,6 +378,7 @@ def square_detect(image):
     
     # identify innermost square of min size (membrane) and identify corners
     min_size = 10
+    hierarchy = None
     x, y, w, h, image_rect = innermost_square(contours, hierarchy, image_copy, min_size)
  
     cv2.circle(image_rect, (x, y), 3 ,255, -1) # draw a dot on upper left corner
@@ -385,11 +387,11 @@ def square_detect(image):
     cv2.circle(image_rect, (x+w, y), 3 ,255, -1) # draw a dot on upper right corner
     detected = True # TO DO: fix
 
-    result = cv2.imshow('result',image_rect)
-    cv2.waitKey(0)
+    # result = cv2.imshow('result',image_rect)
+    # cv2.waitKey(0)
     cv2.destroyAllWindows()
     
-    return x, y, w, h, detected, result
+    return x, y, w, h, detected
 
 
 """
