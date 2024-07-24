@@ -7,12 +7,12 @@
         Bubble Detect Author(s): Fernanda Villalpando
         Area Detect Author(s): Lisette Ruano
         Send Slack Message Author(s): Andrea Munoz
-        Square Detect Author(s): Claudia Jimenez, Aima Qutbuddin, Lisette Ruano
-        Innermost Square Author(s): Claudia Jimenez
+        Square Detect Author(s): Claudia Jimenez, Aima Qutbuddin, Kyle Cheek, Lisette Ruano
+        Innermost Square Author(s): Kyle Cheek, Claudia Jimenez
         
     Commenting/Code Structure was implemented by Lisset Rico.
         
-    Collaborator(s): Argonne National Laboratory (Nazar Delegan, Clayton Devault), Break Through Tech (Kyle Cheek)
+    Collaborator(s): Argonne National Laboratory (Nazar Delegan, Clayton DeVault), Break Through Tech (Kyle Cheek)
     Date Created: 06/26/2024
 
 """
@@ -380,12 +380,11 @@ def square_detect(img_path):
     image_binary = cv2.bitwise_not(otsu)
 
     # find contours
-    (contours,_) = cv2.findContours(image_binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    (contours,hierarchy) = cv2.findContours(image_binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
     print('Contours: ' , len(contours))
     
     # identify innermost square of min size (membrane) and identify corners
     min_size = 10
-    hierarchy = None
     x, y, w, h, image_rect = innermost_square(contours, hierarchy, image_copy, min_size)
  
     cv2.circle(image_rect, (x, y), 3 ,255, -1) # draw a dot on upper left corner
