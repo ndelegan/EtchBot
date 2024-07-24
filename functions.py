@@ -10,6 +10,7 @@
         Square Detect Author(s): Claudia Jimenez, Aima Qutbuddin, Kyle Cheek, Lisette Ruano
         Innermost Square Author(s): Kyle Cheek, Claudia Jimenez
         Calculate Corner Coordinates Author(s): Claudia Jimenez, Aima Qutbuddin
+        Get Membrane Coordinates Author(s): Claudia Jimenez, Aima Qutbuddin
         
     Commenting/Code Structure was implemented by Lisset Rico.
         
@@ -488,3 +489,47 @@ def calculate_corner_coords(num_mem, outer_edge, street, mem_size):
     corners = [lower_left_corner, upper_left_corner, upper_right_corner]
 
     return corners
+
+"""
+    get_mem_coords : calculates theoretical GDS coordinates of membrane centers 
+
+    Args:
+        num_mem : number of membranes in one row of chip
+        outer_edge : distance in microns from outer edge of chip to membrane side
+        street : distance in microns of street width (region between membranes)
+        mem_size : membrane length in microns        
+    Returns:
+        coord_list : list of tuples w/ x,y coordinates of membrane centers
+
+"""
+
+def get_mem_coords(num_mem, outer_edge, street, mem_size):
+    period = mem_size + street # distance in microns between each membrane
+
+    coord_list = []
+
+    start_mem = (outer_edge + (mem_size / 2), outer_edge + (mem_size / 2)) # lowest and leftmost membrane
+    
+    prev_mem = start_mem
+    y = prev_mem[1]
+
+    # traverse chip in snake motion, calculate x,y coordinates for all membrane centers, append to coord_list
+    for i in range(num_mem): # row
+        for j in range(num_mem): # column
+            if (i == 0 and j == 0): # first membrane of whole chip
+                coord_list.append(start_mem)
+                continue
+            elif (j == 0): # first membrane of each row
+                x = prev_mem[0] # x coord unchanged from membrane directly below it
+            elif (i % 2 == 0): # even row
+                x = prev_mem[0] + period # go right 
+            else: # odd row 
+                x = prev_mem[0] - period # go left
+            
+            curr_mem = (x, y)
+            prev_mem = curr_mem
+            coord_list.append(curr_mem)
+
+        y = prev_mem[1] + period # increase y coord for each new row
+        
+    return coord_list
