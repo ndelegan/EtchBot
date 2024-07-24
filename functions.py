@@ -11,6 +11,7 @@
         Innermost Square Author(s): Kyle Cheek, Claudia Jimenez
         Calculate Corner Coordinates Author(s): Claudia Jimenez, Aima Qutbuddin
         Get Membrane Coordinates Author(s): Claudia Jimenez, Aima Qutbuddin
+        Get Affine Transformation Author(s): Clayton DeVault
         
     Commenting/Code Structure was implemented by Lisset Rico.
         
@@ -533,3 +534,44 @@ def get_mem_coords(num_mem, outer_edge, street, mem_size):
         y = prev_mem[1] + period # increase y coord for each new row
         
     return coord_list
+
+"""
+    get_affine_transform : create a matrix for an Affine transform
+        to convert between GDS and stage/device coordinates
+
+    Args:
+        src_points : 3x2 numpy array of source (GDS) coordinates (3 points, each with x and y coords)
+        dst_points : 3x2 numpy array of device coordinates (3 points, each with x and y coords)
+    Returns:
+        T : 2x3 numpy array, represents Affine transformation matrix
+
+"""
+
+def get_affine_transform(src_points, dst_points):
+
+    # Make sure the input shape is correct
+    assert src_points.shape == (3, 2) and dst_points.shape == (3, 2)
+
+    # Create matrix A
+    A = np.array([
+        [src_points[0, 0], src_points[0, 1], 1, 0, 0, 0],
+        [0, 0, 0, src_points[0, 0], src_points[0, 1], 1],
+        [src_points[1, 0], src_points[1, 1], 1, 0, 0, 0],
+        [0, 0, 0, src_points[1, 0], src_points[1, 1], 1],
+        [src_points[2, 0], src_points[2, 1], 1, 0, 0, 0],
+        [0, 0, 0, src_points[2, 0], src_points[2, 1], 1],
+    ])
+
+    # Create matrix B
+    B = dst_points.flatten()
+    
+    # Solve the linear system A * x = B
+    x = np.linalg.solve(A, B)
+
+    # Reshape
+    T = np.array([
+        [x[0], x[1], x[2]],
+        [x[3], x[4], x[5]]
+    ])
+
+    return T
