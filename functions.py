@@ -12,6 +12,7 @@
         Calculate Corner Coordinates Author(s): Claudia Jimenez, Aima Qutbuddin
         Get Membrane Coordinates Author(s): Claudia Jimenez, Aima Qutbuddin
         Get Affine Transformation Author(s): Clayton DeVault
+        Apply Affine Transformation Author(s): Claudia Jimenez
         
     Commenting/Code Structure was implemented by Lisset Rico.
         
@@ -575,3 +576,23 @@ def get_affine_transform(src_points, dst_points):
     ])
 
     return T
+
+"""
+    apply_affine_transform : accepts GDS coordinates and returns equivalent device coordinates
+
+    Args:
+        T : Affine transform matrix (2x3 numpy array)
+        src_point : tuple with 2 elements -> x,y coordinates
+    Returns:
+        dst_point: numpy array with x,y device coordinates
+
+"""
+
+def apply_affine_transform(T, src_point):
+
+    gds = np.array([src_point[0], src_point[1], 1])
+    gds = gds.transpose()
+    dst_point = np.matmul(T, gds)
+    dst_point = dst_point.transpose()
+
+    return dst_point
