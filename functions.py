@@ -9,6 +9,7 @@
         Send Slack Message Author(s): Andrea Munoz
         Square Detect Author(s): Claudia Jimenez, Aima Qutbuddin, Kyle Cheek, Lisette Ruano
         Innermost Square Author(s): Kyle Cheek, Claudia Jimenez
+        Calculate Corner Coordinates Author(s): Claudia Jimenez, Aima Qutbuddin
         
     Commenting/Code Structure was implemented by Lisset Rico.
         
@@ -461,4 +462,29 @@ def probe_adjustment(img_path):
         detected = True
 
     return detected,rightProbe,leftProbe
+
+
+"""
+    calculate_corner_coords : calculate theoretical GDS coordinates for 3 corners of chip
+
+    Args:
+        num_mem : number of membranes in one row of chip
+        outer_edge : distance in microns from outer edge of chip to membrane side
+        street : distance in microns of street width (region between membranes)
+        mem_size : membrane length in microns
+    Returns:
+        corners : list of tuples with 3 corners' x, y coordinates 
+
+"""
+
+def calculate_corner_coords(num_mem, outer_edge, street, mem_size): 
+    chip_length = (mem_size * num_mem) + (street * (num_mem - 1)) + (outer_edge * 2)
     
+    upper_left_corner = (0, chip_length)
+    lower_left_corner = (0, 0)
+    upper_right_corner = (chip_length, chip_length)
+    lower_right_corner = (chip_length, 0)
+
+    corners = [lower_left_corner, upper_left_corner, upper_right_corner]
+
+    return corners
