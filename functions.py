@@ -13,6 +13,8 @@
         Get Membrane Coordinates Author(s): Claudia Jimenez, Aima Qutbuddin
         Get Affine Transformation Author(s): Clayton DeVault
         Apply Affine Transformation Author(s): Claudia Jimenez
+        Apply Affine Transformation for All Membranes Author(s): Claudia Jimenez
+        
         
     Commenting/Code Structure was implemented by Lisset Rico.
         
@@ -545,6 +547,8 @@ def get_mem_coords(num_mem, outer_edge, street, mem_size):
         dst_points : 3x2 numpy array of device coordinates (3 points, each with x and y coords)
     Returns:
         T : 2x3 numpy array, represents Affine transformation matrix
+    Raises:
+        AssertionError if input shape is incorrect
 
 """
 
@@ -596,3 +600,25 @@ def apply_affine_transform(T, src_point):
     dst_point = dst_point.transpose()
 
     return dst_point
+
+"""
+    apply_affine_all_mems : convert GDS coords to device coords for all membranes on chip
+
+    Args:
+        T : Affine transform matrix (2x3 numpy array)
+        src_points_list : list of tuples w/ x,y coordinates of membrane centers
+        num_mem : number of membranes in one row of chip
+    Returns:
+        dst_points : (total_mem)x2 numpy array w/ x,y device coordinates 
+        
+"""
+def apply_affine_all_mems(T, src_points_list, num_mem):
+    total_mem = num_mem * num_mem # for uniform square chip
+    dst_points = np.zeros((total_mem, 2)) # allocate numpy array of size total_mem-by-2, fill w/ zeros
+
+    # convert each source point to destination point 
+    for (index, point) in enumerate(src_points_list):
+        dst_point = apply_affine_transform(T, point)
+        dst_points[index] = dst_point
+        
+    return dst_points
