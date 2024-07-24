@@ -32,19 +32,19 @@ import functions as Functions
 """
 def etch_one_membrane(siglent:object, signatone:object):
     # slack channel urls
-    bubble_url = 'https://hooks.slack.com/services/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'
-    area_url = 'https://hooks.slack.com/services/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'
+    
     
     # initializing our variables
     start_time = time.time()
     tether = False
     img_count = 0
-    siglent.set_volt(8)
-    siglent.set_curr(4)
+    # siglent.set_volt(8)
+    # siglent.set_curr(4)
     bubble_count = 0
     
     # check if siglent is off and prepare for new etch
-    if (siglent.get_output()[0] < 1):
+    # if (siglent.get_output()[0] < 1):
+    if not tether:
         # increase image counter
         img_count += 1
             
@@ -60,11 +60,16 @@ def etch_one_membrane(siglent:object, signatone:object):
         # NOT READY: adjust proes until alidned with square
         # Functions.probe_adjustment(square_coor)
                 
+        # crop image to get targeted square
+        crop_img_name = 'CIM_' + str(img_count) + '.bmp'
+        crop_img_path = 'C:\\CM400\\photos'
+        Functions.crop_image(700, 340, 0, 0, 400, 400, img_path, crop_img_name, crop_img_path)
+        
         # confirm if on a new square
-        dark_area = Functions.areaDetectColorBinary(img_path)
-        print(dark_area)
+        dark_area = Functions.areaDetectColorBinary(crop_img_path)
+        print("heres", dark_area)
         if dark_area > 97:
-            siglent.output_on()
+            # siglent.output_on()
             print("confirmed new etch")
             
     # run while tether is yet to be finished or q is pressed
@@ -91,27 +96,27 @@ def etch_one_membrane(siglent:object, signatone:object):
                 # NOT READY: water pump
                     
             # check tether percentage
-            Functions.area_detect()
+            dark_area = Functions.areaDetectColorBinary(img_path)
                     
             # end of etch
-            if dark_area <= 7:
-                siglent.output_off()
-                Functions.send_slack_message("Tether Minimum Reached! Etch Complete.")
-                tether = True
+            # if dark_area <= 7:
+            #     siglent.output_off()
+            #     Functions.send_slack_message("Tether Minimum Reached! Etch Complete.")
+            #     tether = True
             
             # start the 20 second counter again
             start_time = time.time()
                 
         # keyboard waits for you to press 'q' if you want to end etch early
         if keyboard.is_pressed('q'):
-            siglent.reset_values()
-            siglent.output_off()
+            # siglent.reset_values()
+            # siglent.output_off()
             break
         
     # double check that output is off, disconnect from device and end function    
     Functions.delete_image(img_count)
-    siglent.reset_values()
-    siglent.output_off()
+    # siglent.reset_values()
+    # siglent.output_off()
     print("single etch end")
 
     
@@ -143,15 +148,15 @@ def full_grid_etch(row_len:int, col_len:int):
         # move to next square
         
     # check that the Siglent output has fully dropped to 0V
-    volt_output = siglent.get_output()
+    # volt_output = siglent.get_output()
 
-    while volt_output != 0:
-        siglent.output_off()
-        volt_output = siglent.get_output()
+    # while volt_output != 0:
+    #     siglent.output_off()
+    #     volt_output = siglent.get_output()
         
     print("Siglent Voltage at 0V.")
     print("full grid end")
 
     # disconnect from devices    
-    siglent.close()
-    signatone.close()
+    # siglent.close()
+    # signatone.close()

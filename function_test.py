@@ -1,3 +1,5 @@
+import os.path
+
 import signatone_driver as Signatone_Driver
 import functions as Functions
 import unittest
@@ -24,7 +26,10 @@ class Function_Test(unittest.TestCase):
         print(i)
         Functions.delete_image(i)
         self.assertEqual(os.path.exists("C:\\CM400\\photos\\imgCapture0.bmp"),False)
-
+    def testingImageDeletion(self):
+        counter = 9
+        Functions.delete_image(counter)
+        self.assertEqual(os.path.exists("C:\\CM400\\photos\\imgCapture0.bmp"), False)
 
 
 if __name__ == "__main__":

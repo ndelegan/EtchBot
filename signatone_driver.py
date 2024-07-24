@@ -15,6 +15,8 @@ import pyvisa
 from pyvisa import constants
 import time
 
+import functions
+
 """
     Signatone Class
 

@@ -73,7 +73,7 @@ def delete_image(counter:int):
         
 """
     
-    crop_image : given a image path it crops the image, saves it and returns the path.
+    crop_image : given the path of an image it crops the image, saves it and returns the path.
     
     Args:
         tbd
@@ -83,12 +83,22 @@ def delete_image(counter:int):
         None.
     
 """
-def crop_image(start_x, start_y, new_w, new_h, pixel_w, pixel_h, img_path):
+def crop_image(start_x, start_y, new_w, new_h, pixel_w, pixel_h, img_path, crop_img_name, crop_img_path):
+    os.chdir(crop_img_path)
     image = cv2.imread(img_path)
-    zoom = cv2.resize(image, (new_w, new_h))
+    # zoom = cv2.resize(image, (new_w, new_h))
     
-    crop = zoom[start_y : start_y+pixel_h, start_x : start_x+pixel_w]
-    cv2.imshow
+    crop = image[start_y : start_y+pixel_h, start_x : start_x+pixel_w]
+    
+    cv2.imwrite(crop_img_name, crop)
+    cv2.imshow('crop_img_name', crop)
+    
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    
+    return crop_img_path
+    
+    
      
 
 """
@@ -202,13 +212,9 @@ def areaDetectColorBinary(img_path:str):
 
     # read in image location
     image = cv2.imread(img_path)
-    img = np.zeros(image.shape, image.dtype)
-    alpha = 1.2
-    beta = 15
-    img = cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
 
     # converts image to gray scale and blurs it
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     blur = cv2.medianBlur(gray, 5)
     
     # Sharpens the blurred image
@@ -220,7 +226,8 @@ def areaDetectColorBinary(img_path:str):
     # 148
     # 172 for no color membranes
     # 110
-    ret3,otsu = cv2.threshold(sharpen,35,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+
+    thresh = cv2.threshold(sharpen, 155, 255, cv2.THRESH_BINARY)[1]
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
     close = cv2.morphologyEx(otsu, cv2.MORPH_CLOSE, kernel, iterations=2)
     black_threshold = 50
@@ -233,10 +240,10 @@ def areaDetectColorBinary(img_path:str):
 
     # Calculates percentage of black pixels then shows altered pictures
     percentage_green = (black_pixels / total_pixels) * 100
-    
     whole_number_percentage = int(percentage_green)
-    cv2.imshow('close', close)
-    cv2.imshow('gray', gray)
+    cv2.imshow('close', close) # this shoes black and white pixels
+    # cv2.imshow('gray', gray)
+    
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
