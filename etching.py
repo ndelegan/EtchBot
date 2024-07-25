@@ -140,12 +140,23 @@ def full_grid_etch(row_len:int, col_len:int):
     siglent = Siglent.Siglent()
     signatone = Signatone.Signatone()
     
+    corners = func.calculate_corner_coords(9, 50, 50, 250) # w/out trench 250 microns, w/ 200 microns
+    src_points = np.array(corners)
+    dst_points = np.array([[-12395, -8640], [-12460, -11890], [-15705, -11820]])
+    
+    matrix = func.get_affine_transform(src_points, dst_points)
+    
+    gds_coor = func.get_mem_coords(9, 50, 50, 250)
+    
+    dev_coor = func.apply_affine_all_mems(matrix, gds_coor, 9)
+    
     # begin etching the grid
     for x in range(0, int(row_len)):
         for y in range(0, int(col_len)):
             etch_one_membrane(siglent, signatone)
                     
-        # move to next square
+        # move to next membrane
+        # call chuck
         
     # check that the Siglent output has fully dropped to 0V
     # volt_output = siglent.get_output()

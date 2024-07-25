@@ -8,8 +8,8 @@ import numpy as np
 def main():
     bubble_url = 'https://hooks.slack.com/services/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'
     area_url = 'https://hooks.slack.com/services/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'
-    signatone = Signatone.Signatone()
-    siglent = Siglent.Siglent()
+    # signatone = Signatone.Signatone()
+    # siglent = Siglent.Siglent()
     
     stop = input("Press s to start etching:")
     
