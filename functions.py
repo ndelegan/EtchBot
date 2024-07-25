@@ -481,7 +481,6 @@ def probe_adjustment(img_path):
         corners : list of tuples with 3 corners' x, y coordinates 
 
 """
-
 def calculate_corner_coords(num_mem, outer_edge, street, mem_size): 
     chip_length = (mem_size * num_mem) + (street * (num_mem - 1)) + (outer_edge * 2)
     
@@ -493,6 +492,7 @@ def calculate_corner_coords(num_mem, outer_edge, street, mem_size):
     corners = [lower_left_corner, upper_left_corner, upper_right_corner]
 
     return corners
+
 
 """
     get_mem_coords : calculates theoretical GDS coordinates of membrane centers 
@@ -506,7 +506,6 @@ def calculate_corner_coords(num_mem, outer_edge, street, mem_size):
         coord_list : list of tuples w/ x,y coordinates of membrane centers
 
 """
-
 def get_mem_coords(num_mem, outer_edge, street, mem_size):
     period = mem_size + street # distance in microns between each membrane
 
@@ -538,20 +537,20 @@ def get_mem_coords(num_mem, outer_edge, street, mem_size):
         
     return coord_list
 
+
 """
     get_affine_transform : create a matrix for an Affine transform
         to convert between GDS and stage/device coordinates
 
     Args:
-        src_points : 3x2 numpy array of source (GDS) coordinates (3 points, each with x and y coords)
-        dst_points : 3x2 numpy array of device coordinates (3 points, each with x and y coords)
+        src_points: 3x2 numpy array of source (GDS) coordinates (3 points, each with x and y coords)
+        dst_points: 3x2 numpy array of device coordinates (3 points, each with x and y coords)
     Returns:
-        T : 2x3 numpy array, represents Affine transformation matrix
+        T: 2x3 numpy array, represents Affine transformation matrix
     Raises:
         AssertionError if input shape is incorrect
 
 """
-
 def get_affine_transform(src_points, dst_points):
 
     # Make sure the input shape is correct
@@ -581,6 +580,7 @@ def get_affine_transform(src_points, dst_points):
 
     return T
 
+
 """
     apply_affine_transform : accepts GDS coordinates and returns equivalent device coordinates
 
@@ -591,7 +591,6 @@ def get_affine_transform(src_points, dst_points):
         dst_point: numpy array with x,y device coordinates
 
 """
-
 def apply_affine_transform(T, src_point):
 
     gds = np.array([src_point[0], src_point[1], 1])
@@ -600,6 +599,7 @@ def apply_affine_transform(T, src_point):
     dst_point = dst_point.transpose()
 
     return dst_point
+
 
 """
     apply_affine_all_mems : convert GDS coords to device coords for all membranes on chip

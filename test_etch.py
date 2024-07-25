@@ -8,16 +8,20 @@ def main():
     bubble_url = 'https://hooks.slack.com/services/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'
     area_url = 'https://hooks.slack.com/services/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'
     signatone = Signatone.Signatone()
-    siglent_var = Siglent.Siglent()
+    siglent = Siglent.Siglent()
     
     stop = input("Press s to start etching:")
     
     start_time = time.time()
     
-    siglent_var.output_on()
-    siglent_var.set_volt(8)
-    siglent_var.set_curr(4)
-    siglent_var.get_output()
+    # siglent.output_on()
+    # siglent.set_volt(8)
+    # siglent.set_curr(4)
+    # siglent.get_output()
+    
+    coor = func.apply_affine_all_mems()
+    
+    print(coor)
     
     counter = 0
     while True:
@@ -42,14 +46,14 @@ def main():
                     # water pump
             
         if keyboard.is_pressed('q'):
-            siglent_var.reset_values()
-            siglent_var.output_off()
+            # siglent.reset_values()
+            # siglent.output_off()
             break
         
     print(counter)
     func.delete_image(counter)
-    siglent_var.reset_values()
-    siglent_var.output_off()
+    # siglent.reset_values()
+    # siglent.output_off()
     print("end")
         
         
