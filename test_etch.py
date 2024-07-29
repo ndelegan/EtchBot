@@ -8,10 +8,8 @@ import numpy as np
 def main():
     bubble_url = 'https://hooks.slack.com/services/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'
     area_url = 'https://hooks.slack.com/services/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'
-    # signatone = Signatone.Signatone()
+    signatone = Signatone.Signatone()
     # siglent = Siglent.Siglent()
-    
-    stop = input("Press s to start etching:")
     
     start_time = time.time()
     
@@ -31,6 +29,20 @@ def main():
     dev_coor = func.apply_affine_all_mems(matrix, gds_coor, 9)
     
     print(dev_coor)
+    
+    # check which device we're set to
+    print(signatone.get_device())
+    
+    signatone.set_device('WAFER') # in the program, chuck is actually called wafer, WAFER/wafer both work
+    
+    # check again
+    print(signatone.get_device())
+    
+    # try moving
+    # signatone.move_rel(dev_coor[0][0], dev_coor[0][1])
+    
+    # # check coordinates
+    # print(signatone.get_cap())
     
     counter = 0
     # while True:
