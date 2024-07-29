@@ -20,7 +20,7 @@ def main():
     
     corners = func.calculate_corner_coords(9, 50, 50, 250) # w/out trench 250 microns, w/ 200 microns
     src_points = np.array(corners)
-    dst_points = np.array([[-12395, -8640], [-12460, -11890], [-15705, -11820]])
+    dst_points = np.array([[-14883, -9741], [-14827, -13001], [-18071, -13070]]) # LL, UL, UR corners 
     
     matrix = func.get_affine_transform(src_points, dst_points)
     
@@ -28,7 +28,7 @@ def main():
     
     dev_coor = func.apply_affine_all_mems(matrix, gds_coor, 9)
     
-    print(dev_coor)
+    print(dev_coor[0])
     
     # check which device we're set to
     print(signatone.get_device())
@@ -39,10 +39,10 @@ def main():
     print(signatone.get_device())
     
     # try moving
-    # signatone.move_rel(dev_coor[0][0], dev_coor[0][1])
+    signatone.move_abs(dev_coor[0][0], dev_coor[0][1])
     
     # # check coordinates
-    # print(signatone.get_cap())
+    print(signatone.get_cap())
     
     counter = 0
     # while True:

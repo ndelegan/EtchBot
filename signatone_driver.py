@@ -136,15 +136,18 @@ class Signatone:
 
         Args:
             self: class object
-            x: integer
-            y: integer
+            x: float
+            y: float
         Returns:
             Empty return.
         Raises:
             No errors. Assumes you are connected correctly.
     """
-    def move_rel(self, x:int, y:int):
-        move = "MOVEXREL " + x + " " + y
+    def move_abs(self, x:float, y:float):
+        x = "{:.1f}".format(x)
+        y = "{:.1f}".format(y)
+        
+        move = "MOVEABS " + str(x) + ", " + str(y)
         self.device.query(move)
 
 
