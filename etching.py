@@ -32,7 +32,7 @@ import config
         None. 
 
 """
-def etch_one_membrane(siglent:object, signatone:object):
+def etch_one_membrane(siglent:object, signatone:object, square_x, square_y):
     # initializing our variables
     start_time = time.time()
     tether = False
@@ -57,17 +57,24 @@ def etch_one_membrane(siglent:object, signatone:object):
         crop_img_path = 'C:\\CM400\\photos\\'
         # Functions.crop_image(700, 340, 0, 0, 400, 400, img_path, crop_img_name, crop_img_path)
         Functions.crop_image(825, 380, 0, 0, 325, 325, img_path, crop_img_name, crop_img_path)
+        crop_img = crop_img_path + crop_img_name
         
         # TESTING: get current coordinates of square
-        # x, y, w, h, detected = Functions.square_detect(img_path)
+        # x, y, w, h, detected = Functions.square_detect(crop_img)
         # print(x, y, w, h, detected)
                 
         # NOT READY: adjust proes until alidned with square
-        # Functions.probe_adjustment(square_coor)
+        cap4, cap1 = Functions.move_probes(square_x, square_y)
+        print(cap4, "   ", cap1)
+        # move cap4
+        signatone.set_device('CAP4')
+        signatone.move_abs(cap4[0], cap4[1])
+        
+        # move cap1
+        signatone.set_device('CAP1')
+        signatone.move_abs(cap1[0], cap1[1])
         
         # confirm if on a new square
-        crop_img = crop_img_path + crop_img_name
-        print(crop_img)
         dark_area = Functions.areaDetectColorBinary(crop_img)
         print("heres", dark_area)
         if dark_area > 97:
@@ -158,7 +165,7 @@ def full_grid_etch(row_len:int, col_len:int):
         signatone.set_device('WAFER') # in the program, chuck is actually called wafer, WAFER/wafer both work
         signatone.move_abs(dev_coor[x][0], dev_coor[x][1])
             
-        etch_one_membrane(siglent, signatone)
+        etch_one_membrane(siglent, signatone, dev_coor[x][0], dev_coor[x][1])
         
     # check that the Siglent output has fully dropped to 0V
     # volt_output = siglent.get_output()

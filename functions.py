@@ -469,6 +469,13 @@ def probe_adjustment(img_path):
 
     return detected,rightProbe,leftProbe
 
+def move_probes(x, y):
+    dist = 250/2
+    cap4_des = [x+dist, y-dist]
+    cap1_des = [x-dist, y+dist]
+    
+    return cap4_des, cap1_des
+
 
 """
     calculate_corner_coords : calculate theoretical GDS coordinates for 3 corners of chip
