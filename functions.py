@@ -481,8 +481,8 @@ def probe_adjustment(img_path):
         corners : list of tuples with 3 corners' x, y coordinates 
 
 """
-def calculate_corner_coords(num_mem, outer_edge, street, mem_size): 
-    chip_length = (mem_size * num_mem) + (street * (num_mem - 1)) + (outer_edge * 2)
+def calculate_corner_coords(num_mem, street, mem_size): 
+    chip_length = (mem_size * num_mem) + (street * (num_mem - 1))
     
     upper_left_corner = (0, chip_length)
     lower_left_corner = (0, 0)
