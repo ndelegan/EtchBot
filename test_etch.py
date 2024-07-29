@@ -18,13 +18,13 @@ def main():
     # siglent.set_curr(4)
     # siglent.get_output()
     
-    corners = func.calculate_corner_coords(9, 50, 50, 250) # w/out trench 250 microns, w/ 200 microns
+    corners = func.calculate_corner_coords(9, 75, 250) # w/out trench 250 microns, w/ 200 microns
     src_points = np.array(corners)
-    dst_points = np.array([[-14883, -9741], [-14827, -13001], [-18071, -13070]]) # LL, UL, UR corners 
+    dst_points = np.array([[-15060, -9988], [-15000, -12822], [-17958, -12886]]) # LL, UL, UR corners 
     
     matrix = func.get_affine_transform(src_points, dst_points)
     
-    gds_coor = func.get_mem_coords(9, 50, 50, 250)
+    gds_coor = func.get_mem_coords(9, 75, 250)
     
     dev_coor = func.apply_affine_all_mems(matrix, gds_coor, 9)
     
@@ -39,7 +39,14 @@ def main():
     print(signatone.get_device())
     
     # try moving
-    signatone.move_abs(dev_coor[0][0], dev_coor[0][1])
+    for x in range(0, 15):
+        # time.sleep(10)
+        # move to next square membrane
+        signatone.set_device('WAFER') # in the program, chuck is actually called wafer, WAFER/wafer both work
+        signatone.move_abs(dev_coor[x][0], dev_coor[x][1])
+        
+        # time.sleep(10)
+        print(signatone.get_cap())
     
     # # check coordinates
     print(signatone.get_cap())
@@ -71,7 +78,7 @@ def main():
     #         # siglent.output_off()
     #         break
         
-    print(counter)
+    # print(counter)
     # func.delete_image(counter)
     # siglent.reset_values()
     # siglent.output_off()

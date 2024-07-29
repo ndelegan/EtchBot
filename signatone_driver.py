@@ -53,20 +53,23 @@ class Signatone:
         print(rm.list_resources()) # prints out an array list of all available devices
 
         try:
-          device_str = 'TCPIP0::124.51.29.30::9090::SOCKET'
-          self.device = rm.open_resource(device_str) # connects directly to siglent device
-          self.device.read_termination = '\n'
-          self.device.write_termination = '\n'
-          # set termination method attributes 
-          self.device.set_visa_attribute(constants.VI_ATTR_SUPPRESS_END_EN, constants.VI_FALSE)
-          self.device.set_visa_attribute(constants.VI_ATTR_SEND_END_EN, constants.VI_TRUE)
-          self.device.set_visa_attribute(constants.VI_ATTR_TERMCHAR_EN, constants.VI_TRUE)
-          self.device.set_visa_attribute(constants.VI_ATTR_FILE_APPEND_EN, constants.VI_FALSE)
-          self.device.query('*IDN?')
-          print(self.device.query("*IDN?")) # prints siglents basic info(name, ip, etc)
+            device_str = 'TCPIP0::124.51.29.30::9090::SOCKET'
+            self.device = rm.open_resource(device_str) # connects directly to siglent device
+          
+            self.device.read_termination = '\n'
+            self.device.write_termination = '\n'
+            self.device.timeout = 10000
+            # set termination method attributes 
+            self.device.set_visa_attribute(constants.VI_ATTR_SUPPRESS_END_EN, constants.VI_FALSE)
+            self.device.set_visa_attribute(constants.VI_ATTR_SEND_END_EN, constants.VI_TRUE)
+            self.device.set_visa_attribute(constants.VI_ATTR_TERMCHAR_EN, constants.VI_TRUE)
+            self.device.set_visa_attribute(constants.VI_ATTR_FILE_APPEND_EN, constants.VI_FALSE)
+            self.device.query('*IDN?')
+            print(self.device.query("*IDN?")) # prints siglents basic info(name, ip, etc)
+            
         except Exception as err:
-          print("Cannot connect to Signatone: ", err)
-          quit()
+            print("Cannot connect to Signatone: ", err)
+            quit()
 
 
     """

@@ -245,8 +245,8 @@ def areaDetectColorBinary(img_path:str):
     total_pixels = close.size
 
     # Calculates percentage of black pixels then shows altered pictures
-    percentage_green = (black_pixels / total_pixels) * 100
-    whole_number_percentage = int(percentage_green)
+    percentage_black = (black_pixels / total_pixels) * 100
+    whole_number_percentage = int(percentage_black)
     cv2.imshow('close', close) # this shoes black and white pixels
     # cv2.imshow('gray', gray)
     
