@@ -471,10 +471,10 @@ def probe_adjustment(img_path):
 
 """
     calculate_corner_coords : calculate theoretical GDS coordinates for 3 corners of chip
+        (does not take outer edges of chip into account)
 
     Args:
         num_mem : number of membranes in one row of chip
-        outer_edge : distance in microns from outer edge of chip to membrane side
         street : distance in microns of street width (region between membranes)
         mem_size : membrane length in microns
     Returns:
@@ -499,19 +499,18 @@ def calculate_corner_coords(num_mem, street, mem_size):
 
     Args:
         num_mem : number of membranes in one row of chip
-        outer_edge : distance in microns from outer edge of chip to membrane side
         street : distance in microns of street width (region between membranes)
         mem_size : membrane length in microns        
     Returns:
         coord_list : list of tuples w/ x,y coordinates of membrane centers
 
 """
-def get_mem_coords(num_mem, outer_edge, street, mem_size):
+def get_mem_coords(num_mem, street, mem_size):
     period = mem_size + street # distance in microns between each membrane
 
     coord_list = []
 
-    start_mem = (outer_edge + (mem_size / 2), outer_edge + (mem_size / 2)) # lowest and leftmost membrane
+    start_mem = ((mem_size / 2), (mem_size / 2)) # lowest and leftmost membrane
     
     prev_mem = start_mem
     y = prev_mem[1]
