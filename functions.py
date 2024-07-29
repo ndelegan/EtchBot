@@ -233,7 +233,8 @@ def areaDetectColorBinary(img_path:str):
     # 172 for no color membranes
     # 110
 
-    thresh = cv2.threshold(sharpen, 155, 255, cv2.THRESH_BINARY)[1]
+    ret3,otsu = cv2.threshold(sharpen,35,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    # thresh = cv2.threshold(sharpen, 155, 255, cv2.THRESH_BINARY)[1]
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
     close = cv2.morphologyEx(otsu, cv2.MORPH_CLOSE, kernel, iterations=2)
     black_threshold = 50
@@ -242,7 +243,7 @@ def areaDetectColorBinary(img_path:str):
     # Counting black pixels and total pixels
     black_pixels = np.count_nonzero(close < black_threshold)
     
-    total_pixels = close.size
+    total_pixels = otsu.size
 
     # Calculates percentage of black pixels then shows altered pictures
     percentage_black = (black_pixels / total_pixels) * 100

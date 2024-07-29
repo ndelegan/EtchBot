@@ -54,8 +54,9 @@ def etch_one_membrane(siglent:object, signatone:object):
                 
         # crop image to get targeted square
         crop_img_name = 'CIM_' + str(img_count) + '.bmp'
-        crop_img_path = 'C:\\CM400\\photos'
-        Functions.crop_image(700, 340, 0, 0, 400, 400, img_path, crop_img_name, crop_img_path)
+        crop_img_path = 'C:\\CM400\\photos\\'
+        # Functions.crop_image(700, 340, 0, 0, 400, 400, img_path, crop_img_name, crop_img_path)
+        Functions.crop_image(825, 380, 0, 0, 325, 325, img_path, crop_img_name, crop_img_path)
         
         # TESTING: get current coordinates of square
         # x, y, w, h, detected = Functions.square_detect(img_path)
@@ -66,6 +67,7 @@ def etch_one_membrane(siglent:object, signatone:object):
         
         # confirm if on a new square
         crop_img = crop_img_path + crop_img_name
+        print(crop_img)
         dark_area = Functions.areaDetectColorBinary(crop_img)
         print("heres", dark_area)
         if dark_area > 97:
