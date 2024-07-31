@@ -42,7 +42,7 @@ def etch_one_membrane(siglent:object, signatone:object, square_x, square_y):
     # siglent.set_curr(4)
     
     # check if siglent is off and prepare for new etch
-    # if (siglent.get_output()[0] < 1):
+    # if (siglent.get_output()[0] < 0.5):
     if not tether:
         # increase image counter
         img_count += 1
@@ -53,29 +53,36 @@ def etch_one_membrane(siglent:object, signatone:object, square_x, square_y):
         print(img_path)
                 
         # crop image to get targeted square
-        crop_img_name = 'CIM_' + str(img_count) + '.bmp'
-        crop_img_path = 'C:\\CM400\\photos\\'
-        # Functions.crop_image(700, 340, 0, 0, 400, 400, img_path, crop_img_name, crop_img_path)
-        Functions.crop_image(825, 380, 0, 0, 325, 325, img_path, crop_img_name, crop_img_path)
-        crop_img = crop_img_path + crop_img_name
+        crop_name = 'CIM_' + str(img_count) + '.bmp'
+        crop_path = 'C:\\CM400\\photos\\'
+        Functions.crop_image(625, 340, 0, 0, 550, 450, img_path, crop_name, crop_path)
+        
+        # for the square area detect
+        # Functions.crop_image(825, 380, 0, 0, 325, 325, img_path, crop_name, crop_path)
+        crop_img_path = crop_path + crop_name
         
         # TESTING: get current coordinates of square
-        # x, y, w, h, detected = Functions.square_detect(crop_img)
-        # print(x, y, w, h, detected)
+        x, y, w, h, detected = Functions.square_detect(crop_img_path)
+        print(x, ' ', y, ' ', w, ' ', h, ' ', detected)
                 
         # NOT READY: adjust proes until alidned with square
-        cap4, cap1 = Functions.move_probes(square_x, square_y)
-        print(cap4, "   ", cap1)
-        # move cap4
-        signatone.set_device('CAP4')
-        signatone.move_abs(cap4[0], cap4[1])
         
-        # move cap1
-        signatone.set_device('CAP1')
-        signatone.move_abs(cap1[0], cap1[1])
+        detected, cap1, cap4 = Functions.probe_adjustment(crop_img_path)
+        
+        print(cap1, ' ', cap4)
+        
+        # cap4, cap1 = Functions.move_probes(square_x, square_y)
+        # print(cap4, "   ", cap1)
+        # # move cap4
+        # signatone.set_device('CAP4')
+        # signatone.move_abs(cap4[0], cap4[1])
+        
+        # # move cap1
+        # signatone.set_device('CAP1')
+        # signatone.move_abs(cap1[0], cap1[1])
         
         # confirm if on a new square
-        dark_area = Functions.areaDetectColorBinary(crop_img)
+        dark_area = Functions.areaDetectColorBinary(crop_img_path)
         print("heres", dark_area)
         if dark_area > 97:
             # siglent.output_on()
@@ -144,14 +151,14 @@ def etch_one_membrane(siglent:object, signatone:object, square_x, square_y):
         None. 
 
 """
-def full_grid_etch(row_len:int, col_len:int):
+def full_grid_etch(membranes:int):
     # setting up our devices
     siglent = Siglent.Siglent()
     signatone = Signatone.Signatone()
     
     corners = Functions.calculate_corner_coords(9, 75, 250) # w/out trench 250 microns, w/ 200 microns
     src_points = np.array(corners)
-    dst_points = np.array([[-15060, -9988], [-15000, -12822], [-17958, -12886]])
+    dst_points = np.array([[-11410, -8884], [-9145, -10861], [-11465, -12465]])
     
     matrix = Functions.get_affine_transform(src_points, dst_points)
     
@@ -160,12 +167,16 @@ def full_grid_etch(row_len:int, col_len:int):
     dev_coor = Functions.apply_affine_all_mems(matrix, gds_coor, 9)
     
     # begin etching the grid
-    for x in range(0, int(row_len)):
+    for x in range(0, int(membranes)):
         # move to next square membrane
         signatone.set_device('WAFER') # in the program, chuck is actually called wafer, WAFER/wafer both work
-        signatone.move_abs(dev_coor[x][0], dev_coor[x][1])
-            
-        etch_one_membrane(siglent, signatone, dev_coor[x][0], dev_coor[x][1])
+        # signatone.move_abs(dev_coor[x][0], dev_coor[x][1])
+        
+        # while not on the old glassware, get a random square center
+        signatone.move_abs(-10452, -9625)
+        etch_one_membrane(siglent, signatone, -10452, -9625)
+        
+        # etch_one_membrane(siglent, signatone, dev_coor[x][0], dev_coor[x][1])
         
     # check that the Siglent output has fully dropped to 0V
     # volt_output = siglent.get_output()
@@ -179,4 +190,4 @@ def full_grid_etch(row_len:int, col_len:int):
 
     # disconnect from devices    
     # siglent.close()
-    # signatone.close()
+    signatone.close()

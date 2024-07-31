@@ -20,7 +20,7 @@ def main():
     
     corners = func.calculate_corner_coords(9, 75, 250) # w/out trench 250 microns, w/ 200 microns
     src_points = np.array(corners)
-    dst_points = np.array([[-15060, -9988], [-15000, -12822], [-17958, -12886]]) # LL, UL, UR corners 
+    dst_points = np.array([[-11410, -8884], [-9145, -10861], [-11465, -12465]]) # LL, UL, UR corners 
     
     matrix = func.get_affine_transform(src_points, dst_points)
     
@@ -35,20 +35,14 @@ def main():
     
     signatone.set_device('WAFER') # in the program, chuck is actually called wafer, WAFER/wafer both work
     
-    # check again
-    print(signatone.get_device())
+    signatone.move_abs(-10452, -9625)
     
-    # try moving
-    for x in range(0, 15):
-        # time.sleep(10)
-        # move to next square membrane
-        signatone.set_device('WAFER') # in the program, chuck is actually called wafer, WAFER/wafer both work
-        signatone.move_abs(dev_coor[x][0], dev_coor[x][1])
-        
-        # time.sleep(10)
-        print(signatone.get_cap())
+    signatone.set_device('CAP4')
+    signatone.move_abs(-10452, )
     
-    # # check coordinates
+    signatone.set_device('CAP1')
+    
+    # check coordinates
     print(signatone.get_cap())
     
     counter = 0
