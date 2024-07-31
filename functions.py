@@ -424,28 +424,36 @@ def square_detect(img_path):
 def probe_adjustment(img_path):
     detected = False
     
-    image = cv2.imread(img_path)
-   
-    #Converts picture into grayscale and blurs it
-    alpha = 2.5
+    image = cv2.imread(imageDestination)
+    alpha = 2.5 
     beta = 30
-    img = cv2.convertScaleAbs(image,alpha=alpha,beta=beta)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) 
-    blur = cv2.GaussianBlur(gray,(5,5),0) 
-    sharpen_kernel = np.array([[-1,-1,-1],[-1,9,-1],[-1,-1,-1]])
-    sharpen= cv2.filter2D(blur,-1,sharpen_kernel)
-    bilateral = cv2.bilateralFilter(blur,15,30,15)
+    img = cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
+
+    # cv2.imshow('bright',img)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
     
-        
+    #Converts picture into grayscale and blurs it
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
+    blur = cv2.GaussianBlur(gray,(5,5),0) 
 
     #Apply otsu threshold
-    ret3,otsu = cv2.threshold(blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    ret3,otsu = cv2.threshold(blur,35,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     image_binary = cv2.bitwise_not(otsu)
+
+    # cv2.imshow('gray',gray)
+    # cv2.imshow('blur',blur)
+    # cv2.imshow('sharpen',sharpen)
+    # cv2.imshow('bilateral',bilateral)
+    # #cv2.imshow('bright',img)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
     
     (contours,_) = cv2.findContours(image_binary, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 
     count = 0
+    
     for cnt in contours:
         approx = cv2.approxPolyDP(cnt, 0.1*cv2.arcLength(cnt, True), True)
         area = cv2.contourArea(cnt) #Calculates area of objects to disregard stray small shapes it finds
@@ -513,11 +521,7 @@ def probe_adjustment(img_path):
     if count == 2:
         detected = True
 
-    if detected == False:
-        return detected,0,0
-    else:
-        return detected,rightProbe,leftProbe
-    
+    return detected,rightProbe,leftProbe
 
 def move_probes(x, y):
     dist = 250/2
