@@ -523,6 +523,27 @@ def probe_adjustment(img_path):
 
     return detected,rightProbe,leftProbe
 
+
+def coordsDiff(img_path):
+    detected,rightProbe,leftProbe = probeDetect(img_path)
+    square,bR,uL = square_detect(img_path)
+
+    print("Upper Left Corner: ", uL)
+    print("Bottom Right Corner: ",bR,"\n")
+
+    print("Right Probe:",right)
+    print("Left Probe:",left,"\n")
+    
+    leftX = abs(leftProbe[0]-uL[0])
+    leftY = abs(leftProbe[1]-uL[1])
+    rightX = abs(rightProbe[0]-bR[0])
+    rightY = abs(rightProbe[1]-bR[1])
+
+    print(f'Upper Left Difference: ({leftX},{leftY})')
+    print(f'Bottom Right Difference: ({rightX},{rightY})')
+
+
+
 def move_probes(x, y):
     dist = 250/2
     cap4_des = [x+dist, y-dist]
