@@ -541,6 +541,8 @@ def coordsDiff(img_path):
 
     print(f'Upper Left Difference: ({leftX},{leftY})')
     print(f'Bottom Right Difference: ({rightX},{rightY})')
+    
+    return leftX,leftY,rightX,rightY
 
 
 
