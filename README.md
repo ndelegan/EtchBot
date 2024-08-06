@@ -11,26 +11,20 @@ Break Through Tech Collaborator(s): Kyle Cheek
 
 Overview:
 
-* Our task is to automate the etching process of diamond membranes using a Signatone Voltage Source, Signatone Probe Controls. 
+* Our task is to automate the etching process of diamond membranes using a computer vision, Signatone Voltage Source and Signatone Station Controls. 
 
-Current Progress Made:
-
- - Bubble Bot (Recognition + Sending a Slack Message)
- - Tether Bot (Recognition + Sending a Slack Message)
- - Signatone and Siglent Device Driver
+Current Progress (08/08):
+ - GitHub localization
+ - Sending a slack message from bubbles and tether detection
+ - Signatone and Siglent Device Drivers
  - Pre-Etch: Detects the square
- - Post Etch: Can detect leftover area when image is cropped for a single square (about 7% dark area left)
- - Github localization
- - Etching File combining all bots and functions is made
+ - Can detect unetched area when image is cropped for a single square (about 97% when starting and 7% when done)
+ - Runable etching program (For 1 membrane) In-person or remote
+ - Traversal through the entire grid using GDS coordinates
  - Water Pump by itself works
+ - Program has menu options like a automated machine would
 
-Images:
-
-To-Do
+To-Do (08/08):
  - Refine existing code
- - Use GDS files to pull measurements
  - Convert pixel to device coordinates
- - Start moving from initial membrane to another
  - Use robust and formal testing
- - Menu options
- - Remotely Etching

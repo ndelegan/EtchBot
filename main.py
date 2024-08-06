@@ -1,6 +1,6 @@
 """
 
-    Menu options to simulate a automated machine during testing.
+    Menu options to simulate an automated machine during testing.
 
     Authors: UIC Chicago Tech Circle Team (Lisset Rico, Fernanda Villalpando)
     Collaborator(s): Argonne National Laboratory (Nazar Delegan, Clayton Devault)
@@ -18,7 +18,7 @@ print('Welcome to Etch Bot!')
 # while loop for menu options
 while opt != 'x':
     print('Etch Bot Options: ')
-    print('   1. Etch a Grid')
+    print('   1. Etch a New Grid')
     print('   2. Reset Devices')
     print('   3. Quit (press x)')
     
@@ -31,10 +31,7 @@ while opt != 'x':
         print('     Probes are aligned with square membrane and a person is taking care of the bubbles.')
         print('  3. Testing with only 1 membrane.')
         
-        # etch one square, assuming device setup correctly
-        # etch one square but probes aren't aligned
-        
-        # etch full grid, not ready yet
+        # etch one square, assuming device setup correctly; probe movement still in process
         membranes = input("How many membranes are in the grid? ")
         Etching.full_grid_etch(membranes)
     elif opt == '2':
