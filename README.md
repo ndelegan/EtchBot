@@ -16,7 +16,7 @@ Overview:
 Current Progress (08/08):
  - GitHub localization
  - Sending a slack message from bubbles and tether detection
- - Signatone and Siglent Device Drivers
+ - Signatone and Siglent Device Drivers using Python
  - Pre-Etch: Detects the square
  - Can detect unetched area when image is cropped for a single square (about 97% when starting and 7% when done)
  - Runable etching program (For 1 membrane) In-person or remote
@@ -25,6 +25,7 @@ Current Progress (08/08):
  - Program has menu options like a automated machine would
 
 To-Do (08/08):
+ - Make GitHub private
  - Refine existing code
- - Convert pixel to device coordinates
+ - Convert pixel to device coordinates for probe movement through machine learning
  - Use robust and formal testing
