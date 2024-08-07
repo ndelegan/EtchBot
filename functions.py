@@ -89,7 +89,7 @@ def delete_image(counter:int):
         None.
     
 """
-def crop_image(start_x, start_y, new_w, new_h, pixel_w, pixel_h, img_path, crop_img_name, crop_img_path):
+def crop_image(start_x, start_y, pixel_w, pixel_h, img_path, crop_img_name, crop_img_path):
     os.chdir(crop_img_path)
     image = cv2.imread(img_path)
     # zoom = cv2.resize(image, (new_w, new_h))
@@ -289,7 +289,6 @@ def send_slack_message(webhook_url:str, message:str):
 """
     
     innermost_square : returns the most deeply nested square w/ minimum size (square of interest)
-    TO DO: add more comments, clean up busy logic lines
     
     Args:
         contours: list -> list of list of points that make up a contour (returned by findContours()) 
@@ -533,11 +532,11 @@ def move_probes(x, y):
         (does not take outer edges of chip into account)
 
     Args:
-        num_mem : number of membranes in one row of chip
-        street : distance in microns of street width (region between membranes)
-        mem_size : membrane length in microns
+        num_mem: number of membranes in one row of chip
+        street: distance in microns of street width (region between membranes)
+        mem_size: membrane length in microns
     Returns:
-        corners : list of tuples with 3 corners' x, y coordinates 
+        corners: list of tuples with 3 corners' x, y coordinates 
 
 """
 def calculate_corner_coords(num_mem, street, mem_size): 
@@ -557,9 +556,9 @@ def calculate_corner_coords(num_mem, street, mem_size):
     get_mem_coords : calculates theoretical GDS coordinates of membrane centers 
 
     Args:
-        num_mem : number of membranes in one row of chip
-        street : distance in microns of street width (region between membranes)
-        mem_size : membrane length in microns        
+        num_mem: number of membranes in one row of chip
+        street: distance in microns of street width (region between membranes)
+        mem_size: membrane length in microns        
     Returns:
         coord_list : list of tuples w/ x,y coordinates of membrane centers
 
@@ -643,8 +642,8 @@ def get_affine_transform(src_points, dst_points):
     apply_affine_transform : accepts GDS coordinates and returns equivalent device coordinates
 
     Args:
-        T : Affine transform matrix (2x3 numpy array)
-        src_point : tuple with 2 elements -> x,y coordinates
+        T: Affine transform matrix (2x3 numpy array)
+        src_point: tuple with 2 elements -> x,y coordinates
     Returns:
         dst_point: numpy array with x,y device coordinates
 
@@ -663,11 +662,11 @@ def apply_affine_transform(T, src_point):
     apply_affine_all_mems : convert GDS coords to device coords for all membranes on chip
 
     Args:
-        T : Affine transform matrix (2x3 numpy array)
-        src_points_list : list of tuples w/ x,y coordinates of membrane centers
-        num_mem : number of membranes in one row of chip
+        T: Affine transform matrix (2x3 numpy array)
+        src_points_list: list of tuples w/ x,y coordinates of membrane centers
+        num_mem: number of membranes in one row of chip
     Returns:
-        dst_points : (total_mem)x2 numpy array w/ x,y device coordinates 
+        dst_points: (total_mem)x2 numpy array w/ x,y device coordinates 
         
 """
 def apply_affine_all_mems(T, src_points_list, num_mem):

@@ -121,6 +121,7 @@ def etch_one_membrane(siglent:object, signatone:object):
     # Functions.delete_image(img_count)
     # siglent.reset_values()
     # siglent.output_off()
+    
     print("single etch end")
 
     
@@ -182,6 +183,7 @@ def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int,
     # disconnect from devices    
     # siglent.close()
     signatone.close()
+    
     
 if __name__ == '__main__':
     '''

@@ -10,6 +10,7 @@
 
 import etching as Etching
 
+
 def main():
     opt = ''
 
@@ -51,6 +52,7 @@ def main():
             
     print('Have a good day! :)')
     quit()
+
 
 if __name__ == '__main__':
     main()
