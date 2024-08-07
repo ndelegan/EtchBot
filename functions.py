@@ -421,17 +421,14 @@ def square_detect(img_path):
         No errors. Assumes that all devices are operating correctly.
             
 """
-def probe_adjustment(img_path):
+def probe_detection(img_path):
+    # initialize variables, read image
     detected = False
-    
-    image = cv2.imread(imageDestination)
+    image = cv2.imread(img_path)
     alpha = 2.5 
     beta = 30
+    
     img = cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
-
-    # cv2.imshow('bright',img)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
     
     #Converts picture into grayscale and blurs it
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
@@ -441,15 +438,6 @@ def probe_adjustment(img_path):
     ret3,otsu = cv2.threshold(blur,35,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     image_binary = cv2.bitwise_not(otsu)
 
-    # cv2.imshow('gray',gray)
-    # cv2.imshow('blur',blur)
-    # cv2.imshow('sharpen',sharpen)
-    # cv2.imshow('bilateral',bilateral)
-    # #cv2.imshow('bright',img)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-
-    
     (contours,_) = cv2.findContours(image_binary, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 
     count = 0
@@ -461,7 +449,6 @@ def probe_adjustment(img_path):
         if len(approx) == 3 and area > 1000:
             
             # Extract vertice of the triangle
-
             point1 = tuple(approx[0][0])
             point2 = tuple(approx[1][0])
             point3 = tuple(approx[2][0])
@@ -472,15 +459,6 @@ def probe_adjustment(img_path):
 
             #need to find lowest x for right probe
             if count == 0: 
-                # lowest_x_value = float('inf') 
-                # for vertex in verticesList:
-                #     x_value = vertex[0]  # Get x coordinate of the vertex
-    
-                #     # Compare x_value with highest_x_value found so far
-                #     if x_value < lowest_x_value:
-                #         lowest_x_value = x_value
-                #         tipofProbe = vertex
-                # rightProbe = tipofProbe
                 lowest_y_value = float('inf')
                 for vertex in verticesList:
                     y_value = vertex[1]
@@ -488,7 +466,8 @@ def probe_adjustment(img_path):
                         lowest_y_value = y_value
                         tipofProbe = vertex
                 rightProbe = tipofProbe
-            else: #need to find highest x for left probe
+            # need to find highest x for left probe
+            else:
                  highest_x_value = -float('inf') 
                  for vertex in verticesList:
                     x_value = vertex[0]  # Get x coordinate of the vertex
@@ -498,7 +477,6 @@ def probe_adjustment(img_path):
                         highest_x_value = x_value
                         tipofProbe = vertex
                  leftProbe = tipofProbe
-            
             
             img = cv2.drawContours(image, [cnt], -1, (0,255,255), 2)
 
@@ -510,14 +488,10 @@ def probe_adjustment(img_path):
             M = cv2.moments(cnt)
             count += 1
 
-         
-    #cv2.imshow('binary',image_binary)
-    #cv2.imshow('otsu',otsu)
     cv2.imshow('final',img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-            
-
+    
     if count == 2:
         detected = True
 
@@ -525,14 +499,14 @@ def probe_adjustment(img_path):
 
 
 def coordsDiff(img_path):
-    detected,rightProbe,leftProbe = probeDetect(img_path)
+    detected,rightProbe,leftProbe = probe_detection(img_path)
     square,bR,uL = square_detect(img_path)
 
     print("Upper Left Corner: ", uL)
     print("Bottom Right Corner: ",bR,"\n")
 
-    print("Right Probe:",right)
-    print("Left Probe:",left,"\n")
+    print("Right Probe:",rightProbe)
+    print("Left Probe:", leftProbe, "\n")
     
     leftX = abs(leftProbe[0]-uL[0])
     leftY = abs(leftProbe[1]-uL[1])

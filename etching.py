@@ -32,7 +32,7 @@ import config
         None. 
 
 """
-def etch_one_membrane(siglent:object, signatone:object, square_x, square_y):
+def etch_one_membrane(siglent:object, signatone:object):
     # initializing our variables
     start_time = time.time()
     tether = False
@@ -69,24 +69,12 @@ def etch_one_membrane(siglent:object, signatone:object, square_x, square_y):
         
         detected, cap1, cap4 = Functions.probe_adjustment(crop_img_path)
         
-        print(cap1, ' ', cap4)
-        
-        # cap4, cap1 = Functions.move_probes(square_x, square_y)
-        # print(cap4, "   ", cap1)
-        # # move cap4
-        # signatone.set_device('CAP4')
-        # signatone.move_abs(cap4[0], cap4[1])
-        
-        # # move cap1
-        # signatone.set_device('CAP1')
-        # signatone.move_abs(cap1[0], cap1[1])
-        
         # confirm if on a new square
         dark_area = Functions.areaDetectColorBinary(crop_img_path)
         print("heres", dark_area)
         if dark_area > 97:
             # siglent.output_on()
-            print("confirmed new etch")
+            print("confirmed etchable square")
             
     # run while tether is yet to be finished or q is pressed
     # while not tether:
@@ -138,11 +126,19 @@ def etch_one_membrane(siglent:object, signatone:object, square_x, square_y):
     
 """
 
-    full_grid_etch : runs the cut function for a full grid
+    full_grid_etch : moves from one membrane to the next while calling etch_one_membrane between every movement
     
     Args:
-        row_len: integer
-        col_len: integer
+        num_mem: integer
+        row_mem: integer
+        street: integer
+        grid_len: integer
+        x_ll: integer
+        y_ll: integer
+        x_ul: integer
+        y_ul: integer
+        x_ur: integer
+        y_ur: integer
     Returns:
         None.
     Raises:
@@ -151,32 +147,27 @@ def etch_one_membrane(siglent:object, signatone:object, square_x, square_y):
         None. 
 
 """
-def full_grid_etch(membranes:int):
+def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int, y_ll:int, x_ul:int, y_ul:int, x_ur:int, y_ur:int):
     # setting up our devices
     siglent = Siglent.Siglent()
     signatone = Signatone.Signatone()
     
-    corners = Functions.calculate_corner_coords(9, 75, 250) # w/out trench 250 microns, w/ 200 microns
+    # begin creating the square membranes center coordinates list
+    corners = Functions.calculate_corner_coords(row_mem, street, grid_len) # w/out trench 250 microns, w/ 200 microns
     src_points = np.array(corners)
-    dst_points = np.array([[-11410, -8884], [-9145, -10861], [-11465, -12465]])
-    
+    dst_points = np.array([[x_ll, y_ll], [x_ul, y_ul], [x_ur, y_ur]])
     matrix = Functions.get_affine_transform(src_points, dst_points)
+    gds_coor = Functions.get_mem_coords(row_mem, street, grid_len)
+    dev_coor = Functions.apply_affine_all_mems(matrix, gds_coor, row_mem)
     
-    gds_coor = Functions.get_mem_coords(9, 75, 250)
-    
-    dev_coor = Functions.apply_affine_all_mems(matrix, gds_coor, 9)
-    
-    # begin etching the grid
-    for x in range(0, int(membranes)):
-        # move to next square membrane
+    # begin grid movement
+    for x in range(0, num_mem):
+        # change current device to wafer
         signatone.set_device('WAFER') # in the program, chuck is actually called wafer, WAFER/wafer both work
-        # signatone.move_abs(dev_coor[x][0], dev_coor[x][1])
-        
-        # while not on the old glassware, get a random square center
-        signatone.move_abs(-10452, -9625)
-        etch_one_membrane(siglent, signatone, -10452, -9625)
-        
-        # etch_one_membrane(siglent, signatone, dev_coor[x][0], dev_coor[x][1])
+        # move wafer 
+        signatone.move_abs(dev_coor[x][0], dev_coor[x][1])
+        # start etching
+        etch_one_membrane(siglent, signatone)
         
     # check that the Siglent output has fully dropped to 0V
     # volt_output = siglent.get_output()
@@ -191,3 +182,19 @@ def full_grid_etch(membranes:int):
     # disconnect from devices    
     # siglent.close()
     signatone.close()
+    
+if __name__ == '__main__':
+    '''
+        manually enter the following info in the given order:
+        full_grid_etch(# of membranes, 
+                       # of membranes in a row,
+                       street width,
+                       length of one side of the grid,
+                       lower-left grid X coordinate,
+                       lower-left grid Y coordinate,
+                       upper-left grid X coordinate,
+                       upper-left grid Y coordinate,
+                       upper-right grid X coordinate,
+                       upper-right grid Y coordinate)
+    '''
+    full_grid_etch(1 , 9 , 75 , 250 , -23313 , -9700 , -23234 , -12522 , -26064 , -12588)

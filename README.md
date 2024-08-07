@@ -22,7 +22,7 @@ Current Progress (08/08):
  - Runable etching program (For 1 membrane) In-person or remote
  - Traversal through the entire grid using GDS coordinates
  - Water Pump by itself works
- - Program has menu options like a automated machine would
+ - Program has menu options
 
 To-Do (08/08):
  - Make GitHub private

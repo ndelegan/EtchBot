@@ -20,7 +20,7 @@ def main():
     
     corners = func.calculate_corner_coords(9, 75, 250) # w/out trench 250 microns, w/ 200 microns
     src_points = np.array(corners)
-    dst_points = np.array([[-11410, -8884], [-9145, -10861], [-11465, -12465]]) # LL, UL, UR corners 
+    dst_points = np.array([[-23313, -9700], [-23234, -12522], [-26064, -12588]]) # LL, UL, UR corners 
     
     matrix = func.get_affine_transform(src_points, dst_points)
     
@@ -28,54 +28,24 @@ def main():
     
     dev_coor = func.apply_affine_all_mems(matrix, gds_coor, 9)
     
-    print(dev_coor[0])
-    
     # check which device we're set to
     print(signatone.get_device())
     
+    # move to next square membrane
     signatone.set_device('WAFER') # in the program, chuck is actually called wafer, WAFER/wafer both work
     
-    signatone.move_abs(-10452, -9625)
+    for x in range(0, 81):
+        signatone.move_abs(dev_coor[x][0], dev_coor[x][1])
     
-    signatone.set_device('CAP4')
-    signatone.move_abs(-10452, )
+    # signatone.set_device('CAP4')
+    # signatone.move_abs(-10452, )
     
-    signatone.set_device('CAP1')
+    # signatone.set_device('CAP1')
     
-    # check coordinates
-    print(signatone.get_cap())
+    # # check coordinates
+    # print(signatone.get_cap())
     
     counter = 0
-    # while True:
-    #     curr_time = time.time()
-        
-    #     if curr_time - start_time > 20:
-    #         counter+=1
-    #         image = func.take_image(counter)
-    #         signatone.save_image(image)
-    #         print("image name:", image)
-            
-    #         start_time = time.time()
-            
-    #         # time.sleep(5)
-    #         bubble_count = 1
-    #         if bubble_count > 0:
-    #             bubble_count = func.bubble_detect(bubble_count, image)
-
-    #             # check if bubbles are gone
-    #             if bubble_count > 0:
-    #                 func.send_slack_message(bubble_url, "Bubble Obstruction!")
-    #                 # water pump
-            
-    #     if keyboard.is_pressed('q'):
-    #         # siglent.reset_values()
-    #         # siglent.output_off()
-    #         break
-        
-    # print(counter)
-    # func.delete_image(counter)
-    # siglent.reset_values()
-    # siglent.output_off()
     print("end")
         
         
