@@ -11,7 +11,7 @@
         Innermost Square Author(s): Kyle Cheek, Claudia Jimenez
         Calculate Corner Coordinates Author(s): Claudia Jimenez, Aima Qutbuddin
         Get Membrane Coordinates Author(s): Claudia Jimenez, Aima Qutbuddin
-        Get Affine Transformation Author(s): Clayton DeVault
+        Get Affine Transformation Author(s): Clayton DeVault, Claudia Jimenez
         Apply Affine Transformation Author(s): Claudia Jimenez
         Apply Affine Transformation for All Membranes Author(s): Claudia Jimenez
         
