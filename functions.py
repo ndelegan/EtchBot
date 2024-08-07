@@ -458,6 +458,15 @@ def probe_detection(img_path):
 
             #need to find lowest x for right probe
             if count == 0: 
+                # lowest_x_value = float('inf') 
+                # for vertex in verticesList:
+                #     x_value = vertex[0]  # Get x coordinate of the vertex
+    
+                #     # Compare x_value with highest_x_value found so far
+                #     if x_value < lowest_x_value:
+                #         lowest_x_value = x_value
+                #         tipofProbe = vertex
+                # rightProbe = tipofProbe
                 lowest_y_value = float('inf')
                 for vertex in verticesList:
                     y_value = vertex[1]
