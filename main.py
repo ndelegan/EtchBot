@@ -20,7 +20,7 @@ def main():
     while opt != 'x':
         print('Etch Bot Options: ')
         print('   1. Etch a New Grid')
-        print('   2. Reset Devices')
+        print('   2. Reset Devices TBD: Do not use')
         print('   3. Quit (press x)')
         
         opt = input('Select an Option (Enter the number of the option): ')
