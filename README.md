@@ -29,14 +29,14 @@ Break Through Tech Collaborator(s): Kyle Cheek
  - Use robust and formal testing
 
 ## Running the Program
-There are two ways to run this program
+There are two ways to run this program.
 
 ### First Option: Manually entering grid parameters into the code
 1. Open the etching.py file and scroll to the bottom of the page
 2. You will see a call for the function called full_grid_etch with all the parameters that are passed into the function
 3. If the chuck has moved from last time or unsure if it's where it was left last time update these parameters as neccessary.
-4. Run the file by using the command '''python etching.py'''
+4. Run the file by using the command ```python etching.py```
 
 ### Second Option: Using the menu option to populate grid parameters
-1. Run the main.py file by using the command '''python main.py'''
-2. Once you start the program you will be asked questions to fill the parameters used in the full_grid_etch function in etching.py
+1. Run the main.py file by using the command ``` python main.py ```
+2. Once you start the program you will be asked questions to fill the parameters used in the full_grid_etch function in etching.py.
