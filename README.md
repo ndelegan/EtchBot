@@ -31,7 +31,7 @@ Break Through Tech Collaborator(s): Kyle Cheek
 ## Running the Program
 There are two ways to run this program
 
-### First Pption: Manually entering grid parameters into the code
+### First Option: Manually entering grid parameters into the code
 1. Open the etching.py file and scroll to the bottom of the page
 2. You will see a call for the function called full_grid_etch with all the parameters that are passed into the function
 3. If the chuck has moved from last time or unsure if it's where it was left last time update these parameters as neccessary.
