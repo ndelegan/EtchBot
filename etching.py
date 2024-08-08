@@ -26,10 +26,8 @@ import config
         signatone: object
     Returns:
         None.
-    Raises:
+    Exceptions:
         None.
-    Citations: 
-        None. 
 
 """
 def etch_one_membrane(siglent:object, signatone:object):
@@ -38,8 +36,8 @@ def etch_one_membrane(siglent:object, signatone:object):
     tether = False
     img_count = 0
     bubble_count = 0
-    # siglent.set_volt(8)
-    # siglent.set_curr(4)
+    siglent.set_volt(8)
+    siglent.set_curr(4)
     
     # check if siglent is off and prepare for new etch
     # if (siglent.get_output()[0] < 0.5):
@@ -142,10 +140,8 @@ def etch_one_membrane(siglent:object, signatone:object):
         y_ur: integer
     Returns:
         None.
-    Raises:
+    Exceptions:
         None.
-    Citations: 
-        None. 
 
 """
 def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int, y_ll:int, x_ul:int, y_ul:int, x_ur:int, y_ur:int):
@@ -188,6 +184,7 @@ def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int,
 if __name__ == '__main__':
     '''
         manually enter the following info in the given order:
+        
         full_grid_etch(# of membranes, 
                        # of membranes in a row,
                        street width,
