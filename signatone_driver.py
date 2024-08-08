@@ -166,7 +166,7 @@ class Signatone:
             No errors. Assumes you are connected correctly.
     """
     def move_z(self, amn:int):
-        z = "MOVEZREL " + amn
+        z = "MOVEZABS " + amn
         self.device.query(z)
 
 

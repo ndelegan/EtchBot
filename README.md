@@ -38,5 +38,6 @@ There are two ways to run this program.
 4. Run the file by using the command ```python etching.py```
 
 ### Second Option: Using the menu option to populate grid parameters
-1. Run the main.py file by using the command ``` python main.py ```
+1. Run the main.py file by using the command 
+   ``` python main.py ```
 2. Once you start the program you will be asked questions to fill the parameters used in the full_grid_etch function in etching.py.

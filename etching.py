@@ -38,89 +38,109 @@ def etch_one_membrane(siglent:object, signatone:object):
     bubble_count = 0
     siglent.set_volt(8)
     siglent.set_curr(4)
-    
-    # check if siglent is off and prepare for new etch
-    # if (siglent.get_output()[0] < 0.5):
-    if not tether:
-        # increase image counter
-        img_count += 1
-            
-        # take picture through scope
-        img_path = Functions.take_image(img_count)
-        signatone.save_image(img_path)
-        print(img_path)
-                
-        # crop image to get targeted square
-        crop_name = 'CIM_' + str(img_count) + '.bmp'
-        crop_path = 'C:\\CM400\\photos\\'
-        Functions.crop_image(625, 340, 0, 0, 550, 450, img_path, crop_name, crop_path)
-        
-        # for the square area detect
-        # Functions.crop_image(825, 380, 0, 0, 325, 325, img_path, crop_name, crop_path)
-        crop_img_path = crop_path + crop_name
-        
-        # TESTING: get current coordinates of square
-        x, y, w, h, detected = Functions.square_detect(crop_img_path)
-        print(x, ' ', y, ' ', w, ' ', h, ' ', detected)
-                
-        # NOT READY: adjust proes until alidned with square
-        
-        detected, cap1, cap4 = Functions.probe_adjustment(crop_img_path)
-        
-        # confirm if on a new square
-        dark_area = Functions.areaDetectColorBinary(crop_img_path)
-        print("heres", dark_area)
-        if dark_area > 97:
-            # siglent.output_on()
-            print("confirmed etchable square")
             
     # run while tether is yet to be finished or q is pressed
-    # while not tether:
-    #     # get the current time
-    #     curr_time = time.time()
-    #     dark_area = 0
+    while not tether:
+        # initialize variables: get current time, how much time has passed and dark area
+        curr_time = time.time()
+        lap_time = curr_time - start_time
+        dark_area = 0
             
-    #     # if 20 seconds have passed, check on the membrane
-    #     if curr_time - start_time > 20:
-    #         # increase image counter
-    #         img_count += 1
-            
-    #         # take picture through scope
-    #         img_path = Functions.take_image(img_count)
-    #         signatone.save_image(img_path)
-    #         print(img_path)
-               
-    #         # detect bubbles, notify team on slack, clean bubbles
-    #         bubble_count = Functions.bubble_detect(bubble_count, img_path)
-            
-    #         if bubble_count > 0:
-    #             Functions.send_slack_message(config.Bubbles,"Bubble Obstruction!")
-    #             # NOT READY: water pump
-                    
-    #         # check tether percentage
-    #         dark_area = Functions.areaDetectColorBinary(img_path)
-                    
-    #         # end of etch
-    #         if dark_area <= 7:
-    #             # siglent.output_off()
-    #             Functions.send_slack_message(config.Diamonds,"Diamond Tether Appeared. Etch Complete!")
-    #             tether = True
-            
-    #         # start the 20 second counter again
-    #         start_time = time.time()
-                
-    #     # keyboard waits for you to press 'q' if you want to end etch early
-    #     if keyboard.is_pressed('q'):
-    #         # siglent.reset_values()
-    #         # siglent.output_off()
-    #         break
+        if (siglent.get_output()[0] < 0.5):
+            lap_time = 21
         
-    # # double check that output is off, disconnect from device and end function    
-    # Functions.delete_image(img_count)
-    # siglent.reset_values()
-    # siglent.output_off()
+        # if 20 seconds have passed or start of new membrane: check on the membrane
+        if lap_time > 20:
+            # increase image counter
+            img_count += 1
+                
+            # take picture through scope
+            img_path = Functions.take_image(img_count)
+            signatone.save_image(img_path)
+            print(img_path)
+                    
+            # crop image to get targeted square
+            crop_name = 'CIM_' + str(img_count) + '.bmp'
+            crop_path = 'C:\\CM400\\photos\\'
+            crop_img_path = crop_path + crop_name
+            Functions.crop_image(625, 340, 0, 0, 550, 450, img_path, crop_name, crop_path)
+            # Functions.crop_image(825, 380, 0, 0, 325, 325, img_path, crop_name, crop_path)
+            
+            # TESTING: get current coordinates of square
+            x, y, w, h, detected = Functions.square_detect(crop_img_path)
+            print(x, ' ', y, ' ', w, ' ', h, ' ', detected)
+                    
+            detected, cap1, cap4 = Functions.probe_adjustment(crop_img_path)
+            
+            # NOT READY: adjust probes until aligned with square
+            #            pixel to micron for probes
+            
+            # check current unetched area
+            dark_area = Functions.areaDetectColorBinary(crop_img_path)
+            
+            print('dark area: ', dark_area)
+            if dark_area > 50 and siglent.get_output()[0] < 0.5:
+                print('Confirmed Etchable Square.')
+                
+                on = input('\nStart Etching? Check probe placement, lower them and enter any letter to start or \'q\' to quit: ')
+                
+                if on == 'q':
+                    # disconnect from devices
+                    siglent.close()
+                    signatone.close()
+                    quit()
+                
+                siglent.output_on()
+               
+            # detect bubbles, notify team on slack, clean bubbles
+            bubble_count = Functions.bubble_detect(bubble_count, img_path)
+            
+            if bubble_count > 0:
+                Functions.send_slack_message(config.Bubbles,"Bubble Obstruction!")
+                # NOT READY: water pump
+                    
+            # check tether percentage
+            dark_area = Functions.areaDetectColorBinary(img_path)
+                    
+            # end of etch
+            if dark_area <= 7:
+                siglent.output_off()
+                signatone.set_device('CAP4')
+                signatone.move_z(-5)
+                signatone.set_device('CAP4')
+                signatone.move_z(-5)
+                Functions.send_slack_message(config.Diamonds,"Diamond Tether Appeared. Etch Complete!")
+                tether = True
+            
+            # start the 20 second counter again
+            start_time = time.time()
+        
+        # if anything starts to go wrong user can enter 'a' to abort
+        check = ''
+        if keyboard.is_pressed('a'):
+            print('ABORTED ACTION')
+            signatone.abort_motion()
+            siglent.output_off()
+            
+            while check != 'c' or check != 'q':
+                check = input('\nPlease re-adjust probes, chuck or scope through PM40 before starting the etch again. Enter any letter to start etching again or \'q\' to quit: ')
+            
+            if check != 'q':
+                siglent.voltage_on()
+            
+        # keyboard waits for you to press 'q' pr checks if you pressed q during abort process if you want to end etch early
+        if keyboard.is_pressed('q') or check == 'q':
+            siglent.reset_values()
+            siglent.output_off()
+            break
+            
+        
+    # double check that output is off, delete images taken during etch  
+    Functions.delete_image(img_count)
+    siglent.reset_values()
+    siglent.output_off()
     
-    print("single etch end")
+    print('single etch end')
 
     
 """
@@ -128,16 +148,16 @@ def etch_one_membrane(siglent:object, signatone:object):
     full_grid_etch : moves from one membrane to the next while calling etch_one_membrane between every movement
     
     Args:
-        num_mem: integer
-        row_mem: integer
-        street: integer
-        grid_len: integer
-        x_ll: integer
-        y_ll: integer
-        x_ul: integer
-        y_ul: integer
-        x_ur: integer
-        y_ur: integer
+        num_mem: integer -> # of membranes
+        row_mem: integer -> # of membranes in a row
+        street: integer -> street width
+        grid_len: integer -> length of one side of the grid
+        x_ll: integer -> lower-left grid X coordinate
+        y_ll: integer -> lower-left grid Y coordinate
+        x_ul: integer -> upper-left grid X coordinate
+        y_ul: integer -> upper-left grid Y coordinate
+        x_ur: integer -> upper-right grid X coordinate
+        y_ur: integer -> upper-right grid Y coordinate
     Returns:
         None.
     Exceptions:
@@ -167,17 +187,17 @@ def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int,
         etch_one_membrane(siglent, signatone)
         
     # check that the Siglent output has fully dropped to 0V
-    # volt_output = siglent.get_output()
+    volt_output = siglent.get_output()
 
-    # while volt_output != 0:
-    #     siglent.output_off()
-    #     volt_output = siglent.get_output()
+    while volt_output != 0:
+        siglent.output_off()
+        volt_output = siglent.get_output()
         
-    print("Siglent Voltage at 0V.")
-    print("full grid end")
+    print('Siglent Voltage at 0V.')
+    print('full grid end')
 
     # disconnect from devices    
-    # siglent.close()
+    siglent.close()
     signatone.close()
     
     
