@@ -369,6 +369,9 @@ def innermost_square(contours, hierarchy, image:str, min_size:int):
 """
 def square_detect(img_path):
     image = cv2.imread(img_path)
+    if image is None : 
+        print("No image")
+        print(img_path)
     image_copy = image.copy()
     detected = False
     
@@ -530,8 +533,8 @@ def coordsDiff(img_path):
 
 def move_probes(x, y):
     dist = 250/2
-    cap4_des = [x+dist, y-dist]
-    cap1_des = [x-dist, y+dist]
+    cap4_des = [x+dist+30, y-dist-30]
+    cap1_des = [x-dist-30, y+dist+30]
     
     return cap4_des, cap1_des
 

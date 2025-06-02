@@ -150,7 +150,7 @@ class Signatone:
         x = "{:.1f}".format(x)
         y = "{:.1f}".format(y)
         
-        move = "MOVEABS " + str(x) + ", " + str(y)
+        move = "MOVEABS " + str(x) + ", " + str(y) 
         self.device.query(move)
 
 
@@ -166,7 +166,7 @@ class Signatone:
             No errors. Assumes you are connected correctly.
     """
     def move_z(self, amn:int):
-        z = "MOVEZABS " + amn
+        z = "MOVEZABS " + str(amn)
         self.device.query(z)
 
 
@@ -184,7 +184,11 @@ class Signatone:
             No errors. Assumes you are connected correctly.
     """
     def move_xyz(self, x:int, y:int, z:int):
-        xyz = "MOVEXYZABS " + x + " " + y + " " + z
+        xyz = "MOVEXYZABS " + str(x) + " " + str(y) + " " + str(z)
+        self.device.query(xyz)
+
+    def move_test(self, x:int, y:int, z:int):
+        xyz = "MOVEABS " + str(x) + " " + str(y) + " " + str(z)
         self.device.query(xyz)
 
 

@@ -120,7 +120,9 @@ class Siglent:
     """
     def get_output(self):
         return self.device.query_ascii_values("MEAS:VOLT?")
-
+    
+    def get_current(self):
+        return self.device.query_ascii_values("MEAS:CURR?")
 
     """
         reset_values : set voltage and current to 0
