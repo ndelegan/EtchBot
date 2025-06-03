@@ -206,12 +206,12 @@ class Signatone:
         self.set_device('CAP4')
         cap4_coor=self.get_cap()
         cap4_coor_list=cap4_coor.split(",")
-        self.move_z(int(cap4_coor_list[2])+z) # move up by 100? is this enough?
+        self.move_z(int(float(cap4_coor_list[2]))+z) # move up by 100? is this enough?
                 
         self.set_device('CAP1')
         cap1_coor=self.get_cap()
         cap1_coor_list=cap1_coor.split(",")
-        self.move_z(int(cap1_coor_list[2])+z)
+        self.move_z(int(float(cap1_coor_list[2]))+z)
 
     """
         save_image : save the current camera image to the specified file.

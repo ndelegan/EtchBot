@@ -402,7 +402,7 @@ def square_detect(img_path):
     cv2.circle(image_rect, (x+w, y), 3 ,255, -1) # draw a dot on upper right corner
     detected = True # TO DO: fix
 
-    # result = cv2.imshow('result',image_rect)
+    #result = cv2.imshow('result',image_rect)
     # cv2.waitKey(0)
     cv2.destroyAllWindows()
     

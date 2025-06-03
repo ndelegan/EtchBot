@@ -63,6 +63,7 @@ def etch_one_membrane(siglent:object, signatone:object):
             img_path = Functions.take_image(img_count)
             signatone.save_image(img_path)
             print(img_path)
+            
                     
             # crop image to get targeted square
             crop_name = 'CIM_' + str(img_count) + '.bmp'
@@ -70,12 +71,10 @@ def etch_one_membrane(siglent:object, signatone:object):
             crop_img_path = crop_path + crop_name
 
             #need to correct measurements for targeted square
-            Functions.crop_image(800, 380, 300, 300, img_path, crop_name, crop_path)
-            
+            Functions.crop_image(765, 345, 340, 340, img_path, crop_name, crop_path)
             # TESTING: get current coordinates of square in pixels
             x, y, w, h, detected_square= Functions.square_detect(crop_img_path)
             print(x, ' ', y, ' ', w, ' ', h, ' ', detected_square)
-    
             # TESTING: get current coordinates of probes in pixels    
             #detected_probes, cap1, cap4 = Functions.probe_detection(crop_img_path)
             # what shuld be an eroor if we dont see probes or square??? 
@@ -92,7 +91,7 @@ def etch_one_membrane(siglent:object, signatone:object):
             #  but we can automate it later
 
             # check current unetched area
-            dark_area = Functions.areaDetectColorBinary(crop_img_path)
+            dark_area =Functions.areaDetectColorBinary(crop_img_path)
             
             print('dark area: ', dark_area)
             # current square in unetched and output is off/low
@@ -112,31 +111,29 @@ def etch_one_membrane(siglent:object, signatone:object):
                 
                 siglent.output_on()
  
-            # detect bubbles, notify team on slack, clean bubbles
-           #bubble_count = Functions.bubble_detect(bubble_count, img_path)
-            
-           #if bubble_count > 0:
-                # fix error "config.Bubbles"
-                #Functions.send_slack_message(config.Bubbles,"Bubble Obstruction!")
-                # NOT READY: water pump
-                # maybe trun off signatone output? add water? loop till no bubble on the square? turn machine back on?
+        #     detect bubbles, notify team on slack, clean bubbles
+        #    bubble_count = Functions.bubble_detect(bubble_count, img_path)
+        #    if bubble_count > 0:
+        #         fix error "config.Bubbles"
+        #         Functions.send_slack_message(config.Bubbles,"Bubble Obstruction!")
+        #         NOT READY: water pump
+        #         maybe trun off signatone output? add water? loop till no bubble on the square? turn machine back on?
                     
             # check tether percentage
-            dark_area = Functions.areaDetectColorBinary(img_path)
-                    
+            print("Checking dark area again")
+            dark_area = Functions.areaDetectColorBinary(crop_img_path)
+            print('dark area2: ', dark_area)       
             # end of etch
             if dark_area <= 7:
                 siglent.output_off()
                 signatone.move_probes_z(100) # move up by 100 microns
 
                 #sending confirmation message to slack
-                #Functions.send_slack_message(config.Diamonds,"Diamond Tether Appeared. Etch Complete!")
+                Functions.send_slack_message(config.Diamonds,"Diamond Tether Appeared. Etch Complete!")
                 tether = True
             
             # start the 20 second counter again
             start_time = time.time()
-        
-
         # maybe keep same letter for all the time? a or q?
         # if anything starts to go wrong user can enter 'a' to abort
         check = ''
@@ -157,7 +154,7 @@ def etch_one_membrane(siglent:object, signatone:object):
             siglent.output_off()
             break
             
-        
+    print("before pic delete")  
     # double check that output is off, delete images taken during etch  
     Functions.delete_image(img_count)
     siglent.reset_values()
@@ -226,12 +223,12 @@ def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int,
         
    
     for x in range(0, num_mem):
-        if x!=0: # only move up after the first membrane, first membrne is manually adjusted as of now
-            signatone.move_probes_z(-100) # move down by 100 microns before moving to the next membrane
         # change current device to wafer
         signatone.set_device('WAFER') # in the program, chuck is actually called wafer, WAFER/wafer both work
         # move wafer 
         signatone.move_abs(dev_coor[x][0], dev_coor[x][1])
+        if x!=0: # only move up after the first membrane, first membrne is manually adjusted as of now
+            signatone.move_probes_z(-100) # move down by 100 microns before moving to the next membrane
         # start etching
         etch_one_membrane(siglent, signatone)
         
@@ -269,4 +266,4 @@ if __name__ == '__main__':
                        upper-right grid X coordinate,
                        upper-right grid Y coordinate)
     '''
-    full_grid_etch(3 , 9 , 75 , 250 , -11891 , -12200 , -11864 , -15081 , -14755 , -15133)
+    full_grid_etch(6 , 9 , 75 , 250 , -13424 , -12104, -13439 , -14942 , -16260 , -14894)

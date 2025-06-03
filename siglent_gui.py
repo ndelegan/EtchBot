@@ -14,17 +14,11 @@ def input_values():
     # print (f"Voltage: {voltage} V\nCurrent: {current} A")
 def output_on():
     sig.output_on()
-    # print("on")
 def output_off():
     sig.output_off()
-    # print("off")
 def reset_zero():
     sig.reset_values()
-    # print("redone")
 def live_readings(volt, curr):
-  
-    # volt.config(text=f"Voltage: {volt} V")
-    # curr.config(text=f"Current: {curr} A")
     voltage = sig.get_output()[0]
     current = sig.get_current()[0]
     volt.config(text=f"   Voltage: {voltage:.3f} V")
@@ -33,6 +27,7 @@ def live_readings(volt, curr):
 def update_readings():
     live_readings(volt_lbl, curr_lbl)
     root.after(1000, update_readings)
+    
 # main window
 root = tk.Tk()
 root.title("Siglent Power Supply")
