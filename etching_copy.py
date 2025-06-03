@@ -2,7 +2,8 @@
 
     Automation program for the etching of diamond membranes of a 9x9 sample grid.
 
-    Authors: UIC Chicago Tech Circle Team (Lisset Rico, Fernanda Villalpando)
+    Authors: UIC Chicago Tech Circle Team 2024 (Lisset Rico, Fernanda Villalpando)
+             UIC Chicago Tech Circle Team 2025()
     Collaborator(s): Argonne National Laboratory (Nazar Delegan, Clayton Devault)
     Date Created: 06/26/2024
     Date Updated: 06/02/2025
@@ -49,11 +50,11 @@ def etch_one_membrane(siglent:object, signatone:object):
         lap_time = curr_time - start_time
         dark_area = 0
 
-        # what does it do? if outpur if low assume 21 seconds for image taking?
+        # if output is low assume 21 seconds for instant image taking
         if (siglent.get_output()[0] < 0.5):
             lap_time = 21
         
-        # if 20 seconds have passed or start  of new membrane: check on the membrane
+        # if 20 seconds have passed or start of new membrane: check on the membrane
         if lap_time > 20:
             # increase image counter
             img_count += 1
@@ -67,16 +68,15 @@ def etch_one_membrane(siglent:object, signatone:object):
             crop_name = 'CIM_' + str(img_count) + '.bmp'
             crop_path = 'C:\\CM400\\photos\\'
             crop_img_path = crop_path + crop_name
+
+            #need to correct measurements for targeted square
             Functions.crop_image(800, 380, 300, 300, img_path, crop_name, crop_path)
-            #Functions.crop_image(625, 340, 0, 0, 550, 450, img_path, crop_name, crop_path)
-            # Functions.crop_image(825, 380, 0, 0, 325, 325, img_path, crop_name, crop_path)
             
-            # TESTING: get current coordinates of square
-            # coordinates of sqare in pixels
-            # double ceching if camera sees square
+            # TESTING: get current coordinates of square in pixels
             x, y, w, h, detected_square= Functions.square_detect(crop_img_path)
             print(x, ' ', y, ' ', w, ' ', h, ' ', detected_square)
-            #  double checking if we see probes        
+    
+            # TESTING: get current coordinates of probes in pixels    
             #detected_probes, cap1, cap4 = Functions.probe_detection(crop_img_path)
             # what shuld be an eroor if we dont see probes or square??? 
             # if not detected_square or not detected_probes:
@@ -85,9 +85,12 @@ def etch_one_membrane(siglent:object, signatone:object):
             #     siglent.close()
             #     signatone.close()
             #     quit()
+
             # NOT READY: adjust probes until aligned with square
             #            pixel to micron for probes
-          
+            # Currently probes are being adjusted for first membrane manually
+            #  but we can automate it later
+
             # check current unetched area
             dark_area = Functions.areaDetectColorBinary(crop_img_path)
             
@@ -95,10 +98,13 @@ def etch_one_membrane(siglent:object, signatone:object):
             # current square in unetched and output is off/low
             if dark_area > 50 and siglent.get_output()[0] < 0.5:
                 print('Confirmed Etchable Square.')
+                # currenty this is a manual check for every membrane
+                # we need to make manual check only for first membrane
+                # and then automate it for the rest of the membranes
                 on = input('\nStart Etching? Check probe placement, lower them and enter any letter to start or \'q\' to quit: ')
                 
                 # change it to be "keyboard" check
-                if keyboard.is_pressed('q'):
+                if keyboard.is_pressed('q') or on == 'q':
                     # disconnect from devices
                     siglent.close()
                     signatone.close()
@@ -110,6 +116,7 @@ def etch_one_membrane(siglent:object, signatone:object):
            #bubble_count = Functions.bubble_detect(bubble_count, img_path)
             
            #if bubble_count > 0:
+                # fix error "config.Bubbles"
                 #Functions.send_slack_message(config.Bubbles,"Bubble Obstruction!")
                 # NOT READY: water pump
                 # maybe trun off signatone output? add water? loop till no bubble on the square? turn machine back on?
@@ -120,19 +127,17 @@ def etch_one_membrane(siglent:object, signatone:object):
             # end of etch
             if dark_area <= 7:
                 siglent.output_off()
-                signatone.set_device('CAP4')
-                x=signatone.get_cap()
-                xc=x.split(",")
-                signatone.move_z(str(float(xc[2])+100.0)) # move up by 100
-                signatone.set_device('CAP1')
-                x=signatone.get_cap()
-                signatone.move_z(str(float(xc[2])+100.0))
+                signatone.move_probes_z(100) # move up by 100 microns
+
+                #sending confirmation message to slack
                 #Functions.send_slack_message(config.Diamonds,"Diamond Tether Appeared. Etch Complete!")
                 tether = True
             
             # start the 20 second counter again
             start_time = time.time()
         
+
+        # maybe keep same letter for all the time? a or q?
         # if anything starts to go wrong user can enter 'a' to abort
         check = ''
         if keyboard.is_pressed('a'):
@@ -221,13 +226,8 @@ def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int,
         
    
     for x in range(0, num_mem):
-        if x!=0:
-                signatone.set_device('CAP4')
-                xf=signatone.get_cap()
-                xc=xf.split(",")
-                signatone.move_z(str(float(xc[2])-100.0)) # move up by 100
-                signatone.set_device('CAP1')
-                signatone.move_z(str(float(xc[2])-100.0))
+        if x!=0: # only move up after the first membrane, first membrne is manually adjusted as of now
+            signatone.move_probes_z(-100) # move down by 100 microns before moving to the next membrane
         # change current device to wafer
         signatone.set_device('WAFER') # in the program, chuck is actually called wafer, WAFER/wafer both work
         # move wafer 

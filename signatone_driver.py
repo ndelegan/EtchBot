@@ -2,9 +2,11 @@
 
     Python class called "Signatone" to control the Signatone CAP-946 devices.
 
-    Authors: UIC Chicago Tech Circle Team (Lisset Rico, Andrea Munoz, Claudia Jimenez)
+    Authors: UIC Chicago Tech Circle Team 2024(Lisset Rico, Andrea Munoz, Claudia Jimenez)
+             UIC Chicago Tech Circle Team 2025(Yana Ninovska)
     Collaborator(s): Argonne National Laboratory (Nazar Delegan, Clayton Devault)
     Date Created: 06/20/2024
+    Date Updated: 06/03/2025
 
     To-Do:
     - Test the functions
@@ -29,6 +31,7 @@ import functions
         move_rel : moves the current device to the new position in reference to the current position.
         move_z : moves the current selected device to the new absolute Z position in reference to the current Z position.
         move_xyz : move the current CAP or the microscope to the specified x, y, z location, or the stage to the specified x, y, z location.
+        move_probes_z : move both probes up or down by the specified amount.
         save_image : save the current camera image to the specified file.
         get_scope : returns the current X, Y, Z position of the microscope.
         abort_motion : abort motion of the current device.
@@ -187,10 +190,28 @@ class Signatone:
         xyz = "MOVEXYZABS " + str(x) + " " + str(y) + " " + str(z)
         self.device.query(xyz)
 
-    def move_test(self, x:int, y:int, z:int):
-        xyz = "MOVEABS " + str(x) + " " + str(y) + " " + str(z)
-        self.device.query(xyz)
+    """
+        move_probes_z : move both probes up or down by the specified amount.
 
+        Args:
+            self: class object
+            z: integer (positive number to move up, negative number to move down)
+        Returns:
+            Empty return.
+        Raises:
+            No errors. Assumes you are connected correctly.
+    """
+    def move_probes_z(self, z:int):
+        #getting coordinates of probes and moving them up using other functions
+        self.set_device('CAP4')
+        cap4_coor=self.get_cap()
+        cap4_coor_list=cap4_coor.split(",")
+        self.move_z(int(cap4_coor_list[2])+z) # move up by 100? is this enough?
+                
+        self.set_device('CAP1')
+        cap1_coor=self.get_cap()
+        cap1_coor_list=cap1_coor.split(",")
+        self.move_z(int(cap1_coor_list[2])+z)
 
     """
         save_image : save the current camera image to the specified file.
