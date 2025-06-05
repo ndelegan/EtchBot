@@ -151,3 +151,18 @@ class Siglent:
     """
     def close(self):
         self.device.close()
+        
+        
+    """
+        reset_device : resets all values
+
+        Args:
+            self: class object
+        Returns:
+            Empty return.
+        Raises:
+            No errors. Assumes you are connected correctly.
+    """
+    def reset_device(self):
+            self.device.write("*RST")
+            time.sleep(2)

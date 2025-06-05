@@ -133,6 +133,8 @@ def bubble_detect(bubble_count:int, img_path:str):
     # detects circles
     detected_circles = cv2.HoughCircles(img_blur, cv2.HOUGH_GRADIENT, .1, 100, param1 = 27, param2 = 31, minRadius=0, maxRadius=300)
     
+    if detected_circles is None:
+        return 0
     # counts the amount of circles in the list
     len(detected_circles)
     
@@ -405,6 +407,7 @@ def square_detect(img_path):
     #result = cv2.imshow('result',image_rect)
     # cv2.waitKey(0)
     cv2.destroyAllWindows()
+    
     
     return x, y, w, h, detected
 
@@ -691,3 +694,71 @@ def apply_affine_all_mems(T, src_points_list, num_mem):
         dst_points[index] = dst_point
         
     return dst_points
+
+
+#6/4: TESTING automatic crop detection
+def crop_using_square_detect(img_path, crop_output_path):
+    print("running auto-cropping")
+    image = cv2.imread(img_path)
+    x, y, w, h, detected= square_detect(img_path)
+    
+    if not detected:
+        print("square not detected")
+        return None
+    
+    crop = image[y:y+h, x:x+w]
+    cv2.imwrite(crop_output_path, crop)
+    return crop_output_path
+
+def testing_square(img_path):
+        import cv2
+        import numpy as np
+
+        # Load image and preprocess
+        image = cv2.imread(img_path)
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        _, thresh = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
+
+        # Get image center
+        img_center_x = image.shape[1] // 2
+        img_center_y = image.shape[0] // 2
+
+        # Find contours
+        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        closest_square = None
+        min_distance = float('inf')
+
+        for cnt in contours:
+            approx = cv2.approxPolyDP(cnt, 0.02 * cv2.arcLength(cnt, True), True)
+            
+            if len(approx) == 4:  # Quadrilateral
+                x, y, w, h = cv2.boundingRect(approx)
+                
+                # Optional: filter out non-squares (based on aspect ratio)
+                if abs(w - h) > 10:
+                    continue
+
+                square_center_x = x + w // 2
+                square_center_y = y + h // 2
+
+                # Calculate Euclidean distance to image center
+                distance = np.sqrt((square_center_x - img_center_x) ** 2 + (square_center_y - img_center_y) ** 2)
+
+                if distance < min_distance:
+                    min_distance = distance
+                    closest_square = (x, y, w, h)
+
+        # Draw the closest square
+        if closest_square:
+            x, y, w, h = closest_square
+            print(f"Closest square top-left: ({x}, {y}), width: {w}, height: {h}")
+            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
+            cv2.circle(image, (x + w//2, y + h//2), 5, (255, 0, 0), -1)
+
+        # Show result
+        cv2.imshow("Closest Square", image)
+        
+        cv2.waitKey(0)
+        #return x,y,w,h
+        #cv2.destroyAllWindows()

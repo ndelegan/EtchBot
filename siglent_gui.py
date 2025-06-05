@@ -1,73 +1,202 @@
+"""
+    GUI that allows the use of siglent_driver
+
+    Authors: UIC Chicago Tech Circle Team (Daisy Maldonado)
+    Collaborators: Argonne National Laboratory (Nazar Delegan, Clayton Devault)
+    Date Created: 05/28/2024
+"""
+
 import tkinter as tk
 from tkinter import *
 from siglent_driver import Siglent
-# Function to run when "Set Values" button is clicked
-def input_values():
+
+"""
+    input_values : sets voltage and current after user
+    submits desired inputs
+
+    Args:
+        volt_input: User's voltage amount of choice
+        curr_input: User's current amount of choice
+        sig: Variable which allows calls to functions from siglent_driver 
+    Returns:
+        Empty return.
+    Raises:
+        If siglent input is manually altered, synchronization with the GUI will
+        be disrupted. Power cycling the device (turning it off and on) is required 
+        to restore functionality.
+"""
+def input_values(volt_input, curr_input, sig):
+    # make variables off of user input 
     voltage = float(volt_input.get())
     current = float(curr_input.get())
+    # uses siglent_driver functions to set the current and voltage using user input
     sig.set_volt(voltage)
     sig.set_curr(current)
-    # voltage = sig.set_volt(volt_input.get())
-    # current = sig.set_curr(curr_input.get())
-    # voltage = volt_input.get()
-    # current = curr_input.get()
-    # print (f"Voltage: {voltage} V\nCurrent: {current} A")
-def output_on():
+
+
+"""
+    output_on : turns output on
+
+    Args:
+        sig: Variable which allows calls to functions from siglent_driver 
+    Returns:
+        Empty return.
+    Raises:
+        No errors. Assumes you are connected correctly.
+"""
+def output_on(sig):
     sig.output_on()
-def output_off():
+
+
+"""
+    output_off : turns output off
+
+    Args:
+        sig: Variable which allows calls to functions from siglent_driver 
+    Returns:
+        Empty return.
+    Raises:
+        No errors. Assumes you are connected correctly.
+"""
+def output_off(sig):
     sig.output_off()
-def reset_zero():
+
+
+"""
+    reset_zero : resets current and voltage to 0
+
+    Args:
+        sig: Variable which allows calls to functions from siglent_driver 
+    Returns:
+        Empty return.
+    Raises:
+        No errors. Assumes you are connected correctly.
+"""
+def reset_zero(sig):
     sig.reset_values()
-def live_readings(volt, curr):
+
+
+"""
+    reset_devic3 : resets all values 
+
+    Args:
+        sig: Variable which allows calls to functions from siglent_driver 
+    Returns:
+        Empty return.
+    Raises:
+        No errors. Assumes you are connected correctly.
+"""
+def reset_device(sig):
+    sig.reset_device()
+
+
+"""
+    live_readings : displays current readings of the voltage 
+    and the current 
+
+    Args:
+        volt: Voltage (V) variable being displayed on screen 
+        curr: Current (A) variable being displayed on screen
+        sig: Variable which allows calls to functions from siglent_driver 
+    Returns:
+        Empty return.
+    Raises:
+        No errors. Assumes you are connected correctly.
+"""
+def live_readings(volt, curr, sig):
+    # uses siglent_driver functions to fet the current and voltage 
     voltage = sig.get_output()[0]
     current = sig.get_current()[0]
+    # changes the current and voltage being displayed
     volt.config(text=f"   Voltage: {voltage:.3f} V")
     curr.config(text=f"   Current: {current:.3f} A")
-    
-def update_readings():
-    live_readings(volt_lbl, curr_lbl)
-    root.after(1000, update_readings)
-    
-# main window
-root = tk.Tk()
-root.title("Siglent Power Supply")
-root.geometry("600x350")
-sig = Siglent()
-# Main Menu 
-lbl = Label(root, text = "Set Values: ")
-lbl.pack(anchor = "w")
-# set values
-values_frame = Frame(root)
-values_frame.pack(anchor = "w")
-volt_lbl = Label(values_frame, text = "   Voltage (V):")
-volt_lbl.pack(side=LEFT)
-volt_input = Entry(values_frame, width=10)
-volt_input.pack(side=LEFT, padx=15) 
-curr_lbl = Label(values_frame, text = "  Current (A):")
-curr_lbl.pack(side=LEFT)
-curr_input = Entry(values_frame, width=10)
-curr_input.pack(side=LEFT, padx=15) 
-vals_btn = tk.Button(values_frame, text="Set Values", command=input_values)
-vals_btn.pack(padx=15, pady=20)
-# control buttons
-controls_frame = Frame(root)
-controls_frame.pack(anchor = "w")
-on_btn = tk.Button(controls_frame, text="Output On", command=output_on)
-on_btn.pack(padx=15, pady=20, side=LEFT)
-off_btn = tk.Button(controls_frame, text="Output Off", command=output_off)
-off_btn.pack(padx=15, pady=20, side=LEFT)
-reset_btn = tk.Button(controls_frame, text="Reset to 0", command=reset_zero)
-reset_btn.pack(padx=15, pady=20, side=LEFT)
-# live readings
-readings_frame = Frame(root)
-readings_frame.pack(anchor = "w")
-lbl = Label(readings_frame, text = "Live Readings: ")
-lbl.pack(anchor = "w", pady=20)
-volt_lbl = Label(readings_frame, text = "   Voltage: -- V")
-volt_lbl.pack(side=LEFT)
-curr_lbl = Label(root, text = "   Current: -- A")
-curr_lbl.pack(side=LEFT)
-# live_readings(volt_lbl, curr_lbl)
-update_readings()
-# Run the app
-root.mainloop()
+
+
+"""
+    update_readings : updates voltage (V) and current (A) readings 
+    every 0.1 milliseconds
+
+    Args:
+        root: Main application window
+        volt_lbl: Voltage (V) variable being displayed on screen
+        curr_lbl: Current (A) variable being displayed on screen
+        sig: Variable which allows calls to functions from siglent_driver
+    Returns:
+        Empty return.
+    Raises:
+        No errors. Assumes you are connected correctly.
+"""
+def update_readings(root, volt_lbl, curr_lbl, sig):
+    live_readings(volt_lbl, curr_lbl, sig)
+    root.after(100, lambda: update_readings(root, volt_lbl, curr_lbl, sig))
+
+
+"""
+    gui_popup : displays all components of the gui and  
+    calls functions for use as necessary
+
+    Args:
+        None
+    Returns:
+        Empty return.
+    Raises:
+        No errors. Assumes you are connected correctly.
+"""
+def gui_popup():
+    # main window components
+    root = tk.Tk()
+    root.title("Siglent Power Supply")
+    root.geometry("600x350")
+    sig = Siglent()
+
+    # --- set values section of GUI --- 
+    values_frame = tk.LabelFrame(root, text="Set Values", padx=10, pady=10)
+    values_frame.pack(anchor = "w")
+     # voltage prompts and input boxes
+    volt_lbl = Label(values_frame, text = "   Voltage (V):")
+    volt_lbl.pack(side=LEFT)
+    volt_input = Entry(values_frame, width=10)
+    volt_input.pack(side=LEFT, padx=15) 
+     # current prompts and input boxes
+    curr_lbl = Label(values_frame, text = "  Current (A):")
+    curr_lbl.pack(side=LEFT)
+    curr_input = Entry(values_frame, width=10)
+    curr_input.pack(side=LEFT, padx=15) 
+     # button to set values
+    vals_btn = tk.Button(values_frame, text="Set Values", command=lambda: input_values(volt_input, curr_input, sig))
+    vals_btn.pack(padx=15, pady=20)
+
+
+    # --- control buttons section of GUI ---
+    controls_frame = Frame(root)
+    controls_frame.pack(anchor = "w")
+
+    on_btn = tk.Button(controls_frame, text="Output On", command=lambda: output_on(sig)) # output on button
+    on_btn.pack(padx=15, pady=20, side=LEFT)
+
+    off_btn = tk.Button(controls_frame, text="Output Off", command=lambda: output_off(sig)) # output off button
+    off_btn.pack(padx=15, pady=20, side=LEFT)
+
+    reset_btn = tk.Button(controls_frame, text="Reset Input to 0", command=lambda: reset_zero(sig)) # reset to 0 button
+    reset_btn.pack(padx=15, pady=20, side=LEFT)
+
+    restart_btn = tk.Button(controls_frame, text="Reset Device", command=lambda: reset_device(sig)) # reset screen button
+    restart_btn.pack(padx=15, pady=20, side=LEFT)
+
+
+    # --- live readings section of GUI ---
+    readings_frame = tk.LabelFrame(root, text="Live Readings:", padx=10, pady=10)
+    readings_frame.pack(anchor = "w")
+
+    volt_lbl = Label(readings_frame, text = "   Voltage: -- V")
+    volt_lbl.pack(side=LEFT)
+
+    curr_lbl = Label(readings_frame, text = "   Current: -- A")
+    curr_lbl.pack(side=LEFT)
+    update_readings(root, volt_lbl, curr_lbl, sig)
+
+    # Run the app
+    root.mainloop()
+
+if __name__ == "__main__":
+    gui_popup()
