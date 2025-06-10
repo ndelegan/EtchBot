@@ -322,4 +322,26 @@ if __name__ == '__main__':
                        upper-right grid X coordinate,
                        upper-right grid Y coordinate)
     '''
-    full_grid_etch(12 , 9 , 75 , 250 , -13727 , -12005, -13653, -14867 , -16469 , -14901)
+    
+    siglent = Siglent.Siglent()
+    signatone = Signatone.Signatone()
+    
+    signatone.set_device("CAP1")
+    signatone.move_z(-5000)
+    
+    # img_count = 79
+                
+    # # take picture through scope
+    # img_path = Functions.take_image(img_count)
+    # signatone.save_image(img_path)
+    # print(img_path)
+            
+    # # crop image to get targeted square
+    # crop_name = 'CIM_' + str(img_count) + '.bmp'
+    # crop_path = 'C:\\CM400\\photos\\'
+    # crop_img_path = crop_path + crop_name
+    # Functions.crop_image(750, 350, 500, 500, img_path, crop_name, crop_path)
+    # #Functions.crop_using_square_detect(img_path, crop_img_path)
+    # Functions.testing_square(crop_img_path)
+    
+    #full_grid_etch(12 , 9 , 75 , 250 , -13727 , -12005, -13653, -14867 , -16469 , -14901)

@@ -708,6 +708,7 @@ def crop_using_square_detect(img_path, crop_output_path):
     
     crop = image[y:y+h, x:x+w]
     cv2.imwrite(crop_output_path, crop)
+    cv2.imshow("test", crop)
     return crop_output_path
 
 def testing_square(img_path):
@@ -755,7 +756,8 @@ def testing_square(img_path):
             print(f"Closest square top-left: ({x}, {y}), width: {w}, height: {h}")
             cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
             cv2.circle(image, (x + w//2, y + h//2), 5, (255, 0, 0), -1)
-
+        else :
+            print("fail tp detect")
         # Show result
         cv2.imshow("Closest Square", image)
         
