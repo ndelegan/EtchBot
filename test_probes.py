@@ -1,10 +1,10 @@
 # import cv2
-# from functions import probe_detection
+# from functions import find_dark_probes
 
 # image_path = "image.png"
 
-# detected, right_probe, left_probe = probe_detection(image_path)
+# detected, top_probe, bottom_probe = find_dark_probes(image_path)
 
 # print("detected: ", detected)
-# print("right probe: ", right_probe)
-# print("left probe:", left_probe)
+# print("top probe: ", top_probe)
+# print("bottom probe:", bottom_probe)

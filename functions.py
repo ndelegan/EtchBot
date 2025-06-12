@@ -512,6 +512,50 @@ def probe_detection(img_path):
     return detected,rightProbe,leftProbe
 
 
+# def find_dark_probes(img_path):
+#     image = cv2.imread(img_path)
+#     if image is None:
+#         print("Image not found.")
+#         return False, None, None
+    
+#     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+#     # Use a stronger blur to unify probe edges better
+#     blur = cv2.GaussianBlur(gray, (11, 11), 0)
+#     # Looser threshold to catch more of the dark probe
+#     _, binary = cv2.threshold(blur, 85, 255, cv2.THRESH_BINARY_INV)
+#     # Find contours
+#     contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+#     probe_candidates = []
+#     for cnt in contours:
+#         area = cv2.contourArea(cnt)
+#         if area < 1500:  # increased min area to ignore noise
+#             continue
+#         # Get center of mass
+#         M = cv2.moments(cnt)
+#         if M["m00"] == 0:
+#             continue
+#         cx = int(M["m10"] / M["m00"])
+#         cy = int(M["m01"] / M["m00"])
+#         probe_candidates.append((cx, cy))
+#         # Draw contour and dot
+#         cv2.drawContours(image, [cnt], -1, (0, 255, 255), 2)
+#         cv2.circle(image, (cx, cy), 6, (0, 255, 0), -1)
+        
+#     if len(probe_candidates) >= 1:
+#         sorted_probes = sorted(probe_candidates, key=lambda p: p[1])  # by vertical position
+#         top_probe = sorted_probes[0]
+#         bottom_probe = sorted_probes[-1] if len(probe_candidates) > 1 else None
+#         detected = True
+#     else:
+#         detected = False
+#         top_probe = bottom_probe = None
+        
+#     cv2.imshow("Probe Detection", image)
+#     cv2.waitKey(0)
+#     cv2.destroyAllWindows()
+#     return detected, top_probe, bottom_probe
+
 def coordsDiff(img_path):
     detected,rightProbe,leftProbe = probe_detection(img_path)
     square,bR,uL = square_detect(img_path)
@@ -764,3 +808,154 @@ def testing_square(img_path):
         cv2.waitKey(0)
         #return x,y,w,h
         #cv2.destroyAllWindows()
+
+
+#6/11 Crop using calculations
+def compute_pixel_stage_scale(first_mem_image_center, first_mem_device_xy, second_mem_image_center, second_mem_device_xy):
+    dx_stage = second_mem_device_xy[0] - first_mem_device_xy[0]
+    dy_stage = second_mem_device_xy[1] - first_mem_device_xy[1]
+    
+    dx_pixels = second_mem_image_center[0] - first_mem_image_center[0]
+    dy_pixels = second_mem_image_center[1] - first_mem_image_center[1]
+    
+    pixels_per_micron_x = dx_pixels / dx_stage if dx_stage != 0 else 0
+    pixels_per_micron_y = dy_pixels / dy_stage if dy_stage != 0 else 0
+    
+    return {
+        'first_mem_image_center': first_mem_image_center,
+        'first_mem_device_xy': first_mem_device_xy,
+        'pixels_per_micron_x': pixels_per_micron_x,
+        'pixels_per_micron_y': pixels_per_micron_y
+    }
+    
+    
+def predict_crop_pixel_from_calibration(stage_xy, calibration):
+    delta_stage_x = stage_xy[0] - calibration['first_mem_device_xy'][0]
+    delta_stage_y = stage_xy[1] - calibration['first_mem_device_xy'][1]
+    
+    predicted_x_img = calibration['first_mem_image_center'][0] + delta_stage_x * calibration['pixels_per_micron_x']
+    predicted_y_img = calibration['first_mem_image_center'][1] + delta_stage_y * calibration['pixels_per_micron_y']
+    
+    return int(predicted_x_img), int(predicted_y_img)
+
+def crop_from_prediction(image_path, center_x, center_y, box_size=300):
+    image = cv2.imread(image_path)
+    half = box_size // 2
+    
+    h, w, _ = image.shape
+    x1 = max(center_x - half, 0)
+    x2 = min(center_x + half, w)
+    y1 = max(center_y - half, 0)
+    y2 = min(center_y + half, h)
+    
+    crop = image[y1:y2, x1:x2]
+    return crop
+
+def calibration_helper(signatone, dev_coor):
+    import keyboard
+
+    # Move to first membrane
+    signatone.set_device('WAFER')
+    signatone.move_abs(dev_coor[0][0], dev_coor[0][1])
+    input("Positioned at first membrane. Capture image. Enter first_mem_image_center (x y): ")
+    x_img0 = int(input("x: "))
+    y_img0 = int(input("y: "))
+    first_mem_image_center = (x_img0, y_img0)
+    first_mem_device_xy = dev_coor[0]
+
+    # Move to second membrane (recommended same row, next membrane)
+    signatone.move_abs(dev_coor[1][0], dev_coor[1][1])
+    input("Positioned at second membrane. Capture image. Enter second_mem_image_center (x y): ")
+    x_img1 = int(input("x: "))
+    y_img1 = int(input("y: "))
+    second_mem_image_center = (x_img1, y_img1)
+    second_mem_device_xy = dev_coor[1]
+
+    # Compute calibration
+    calibration = compute_pixel_stage_scale(first_mem_image_center, first_mem_device_xy,
+                                            second_mem_image_center, second_mem_device_xy)
+
+    print("\n--- Calibration Result ---")
+    print(f"First membrane device XY: {first_mem_device_xy}")
+    print(f"First membrane image center: {first_mem_image_center}")
+    print(f"Second membrane device XY: {second_mem_device_xy}")
+    print(f"Second membrane image center: {second_mem_image_center}")
+    print(f"Pixels per micron X: {calibration['pixels_per_micron_x']}")
+    print(f"Pixels per micron Y: {calibration['pixels_per_micron_y']}")
+
+    return calibration
+    
+    
+def get_z_heights(num_mem, z_ll, z_ul, z_ur,dev_points, dst_points):
+
+    z_values = np.array([z_ll, z_ul, z_ur])
+    points_3d = np.column_stack((dst_points, z_values))
+    z_heights = []
+    v1 = points_3d[1] - points_3d[0]  # Vector from upper-left to lower-left
+    v2 = points_3d[2] - points_3d[0]  # Vector from upper-right to upper-left
+    # Calculate the normal vector to the plane defined by these three points
+    normal = np.cross(v1, v2)
+    A, B, C = normal # Coefficients of the plane equation 
+    D = -np.dot(normal, points_3d[0]) 
+
+    # Function to compute Z at any (x, y)
+    def get_z(x, y):
+        return -(A * x + B * y + D) / C
+    
+    for num in range(len(dev_points)):
+        coor=get_z(dev_points[num][0], dev_points[num][1])
+        z_heights.append(coor)
+    
+    z_heights = np.array(z_heights)
+    return z_heights
+
+def auto_crop_from_dark_probes(image_path, save_path="cropped_from_probes.png", margin=20):
+    image = cv2.imread(image_path)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # Invert image so probes (dark) become white
+    inverted = cv2.bitwise_not(gray)
+    # Threshold to isolate dark regions (now white in inverted image)
+    _, thresh = cv2.threshold(inverted, 180, 255, cv2.THRESH_BINARY)
+    # Optional: remove noise
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,3))
+    cleaned = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=2)
+    # Find contours
+    contours, _ = cv2.findContours(cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # Filter by area — ignore small dark blobs
+    large_contours = [c for c in contours if cv2.contourArea(c) > 50]
+    if len(large_contours) < 2:
+        print("Less than 2 dark blobs (probes) detected.")
+        return None
+    # Sort by area (descending) and take top 2
+    top_two = sorted(large_contours, key=cv2.contourArea, reverse=True)[:2]
+    # Get centers
+    centers = []
+    for c in top_two:
+        M = cv2.moments(c)
+        if M["m00"] != 0:
+            cx = int(M["m10"] / M["m00"])
+            cy = int(M["m01"] / M["m00"])
+            centers.append((cx, cy))
+    if len(centers) != 2:
+        print("Error getting probe centers.")
+        return None
+    # Define crop rectangle
+    (x1, y1), (x2, y2) = centers
+    x_min, x_max = min(x1, x2), max(x1, x2)
+    y_min, y_max = min(y1, y2), max(y1, y2)
+    top_margin = 106
+    bottom_margin = 50
+    left_margin = 64
+    right_margin = 11
+    # Add margin and clip to image size
+    height, width = image.shape[:2]
+    x_min = max(x_min + left_margin, 0)
+    x_max = min(x_max + right_margin, width)
+    y_min = max(y_min + top_margin, 0)
+    y_max = min(y_max - bottom_margin, height)
+    cropped = image[y_min:y_max, x_min:x_max]
+    cv2.imshow("Cropped From Probes", cropped)
+    cv2.imwrite(save_path, cropped)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    return cropped

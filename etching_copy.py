@@ -34,7 +34,7 @@ from queue import Queue
         None.
 
 """
-def etch_one_membrane(siglent:object, signatone:object):
+def etch_one_membrane(siglent:object, signatone:object,  x, z_to_lower_1, z_to_lower_4):
     # initializing our variables
     start_time = time.time()
     tether = False
@@ -42,6 +42,7 @@ def etch_one_membrane(siglent:object, signatone:object):
     bubble_count = 0
     siglent.set_volt(8)
     siglent.set_curr(4)
+
             
     # run while tether is yet to be finished or q is pressed
     while not tether:
@@ -62,7 +63,7 @@ def etch_one_membrane(siglent:object, signatone:object):
             # take picture through scope
             img_path = Functions.take_image(img_count)
             signatone.save_image(img_path)
-            print(img_path)
+            print("Full image:", img_path)
             
             
             #stop=input("check pic")       
@@ -72,8 +73,8 @@ def etch_one_membrane(siglent:object, signatone:object):
             crop_img_path = crop_path + crop_name
 
 
-            Functions.crop_image(700, 390, 350, 350, img_path, crop_name, crop_path)
-            Functions.testing_square(  crop_img_path)
+            #Functions.crop_image(700, 390, 350, 350, img_path, crop_name, crop_path)
+            #Functions.testing_square(  crop_img_path)
             #need to correct measurements for targeted square (MANUAL RN)
             #Functions.crop_image(1100, 1100, 200, 200, img_path, crop_name, crop_path)
             #Functions.crop_image(700, 390, 340, 340, img_path, crop_name, crop_path)
@@ -98,8 +99,8 @@ def etch_one_membrane(siglent:object, signatone:object):
             # cv2.imwrite(crop_img_path, square_crop)
             
             # TESTING: get current coordinates of square in pixels
-            x, y, w, h, detected_square = Functions.square_detect(crop_img_path)
-            print(x, y, w, h, detected_square)
+            #x, y, w, h, detected_square = Functions.square_detect(crop_img_path)
+            #rint(x, y, w, h, detected_square)
 
             #print(x, ' ', y, ' ', w, ' ', h, ' ', detected_square)
             # TESTING: get current coordinates of probes in pixels    
@@ -116,7 +117,7 @@ def etch_one_membrane(siglent:object, signatone:object):
             #            pixel to micron for probes
             # Currently probes are being adjusted for first membrane manually
             #  but we can automate it later
-            bubble_count=Functions.bubble_detect(bubble_count, img_path)
+            bubble_count=0#Functions.bubble_detect(bubble_count, img_path)
             while bubble_count > 0:
                 siglent.output_off()
                 # here add water
@@ -147,7 +148,7 @@ def etch_one_membrane(siglent:object, signatone:object):
                 
 
             # check current unetched area
-            dark_area = Functions.areaDetectColorBinary(crop_img_path)
+            dark_area =  77# Functions.areaDetectColorBinary(crop_img_path)
             
             print('dark area: ', dark_area)
             # current square in unetched and output is off/low
@@ -156,10 +157,17 @@ def etch_one_membrane(siglent:object, signatone:object):
                 # currenty this is a manual check for every membrane
                 # we need to make manual check only for first membrane
                 # and then automate it for the rest of the membranes
-                on = input('\nStart Etching? Check probe placement, lower them and enter any letter to start or \'q\' to quit: ')
+                if x==0:
+                    on = input('\nStart Etching? Check probe placement, lower them and enter any letter to start or \'q\' to quit: ')
+                    
+                if x!=0:
+                    signatone.set_device("CAP1")
+                    signatone.move_z(z_to_lower_1) # move to the z height of the first probe
+                    signatone.set_device("CAP4")                
+                    signatone.move_z(z_to_lower_4) # move to the z height of the second probe
                 
                 # change it to be "keyboard" check
-                if keyboard.is_pressed('q') or on == 'q':
+                if keyboard.is_pressed('q') :
                     # disconnect from devices
                     siglent.close()
                     signatone.close()
@@ -177,13 +185,12 @@ def etch_one_membrane(siglent:object, signatone:object):
                     
             # check tether percentage
             print("Checking dark area again")
-            dark_area = Functions.areaDetectColorBinary(crop_img_path)
+            dark_area = 6#  Functions.areaDetectColorBinary(crop_img_path)
             print('dark area2: ', dark_area)       
             # end of etch
             if dark_area <= 7:
                 siglent.output_off()
-                signatone.move_probes_z(100) # move up by 100 microns
-
+                signatone.move_probes_z(500) # move up by 100 microns
                 #sending confirmation message to slack
                 #Functions.send_slack_message(config.Diamonds,"Diamond Tether Appeared. Etch Complete!")
                 tether = True
@@ -264,6 +271,18 @@ def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int,
     gds_coor = Functions.get_mem_coords(row_mem, street, grid_len)
     dev_coor = Functions.apply_affine_all_mems(matrix, gds_coor, row_mem)
     
+     # get z height of middle of every membrane (should it be height of the probes? whci one? cuz thechicaaly i need both) 
+    z_heights_1=Functions.get_z_heights(num_mem, -4853, -4852, -4783,dev_coor, dst_points)# in relation to coordintes of cap1
+    z_heights_4=Functions.get_z_heights(num_mem, -7058, -7014, -6985,dev_coor, dst_points) # in relation to coordintes of cap4
+    # z of what? probes? which one? techinally need boths
+    z_when_touching_first_membrane_1=-7044
+    z_when_ready_to_etch_first_1=-6985 # couple of microns above the membrane, so probes are not touching it
+    diff_z_1 = z_when_ready_to_etch_first_1 - z_when_touching_first_membrane_1 # how much do we being it up after touching the first membrane
+
+    z_when_touching_first_membrane_4=0
+    z_when_ready_to_etch_first_4=0 # couple of microns above the membrane, so probes are not touching it
+    diff_z_4 = z_when_ready_to_etch_first_4 - z_when_touching_first_membrane_4 # how much do we being it up after touching the first membrane
+        
 
     print("before queue")
     frame_queue = Queue()
@@ -283,10 +302,11 @@ def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int,
         signatone.set_device('WAFER') # in the program, chuck is actually called wafer, WAFER/wafer both work
         # move wafer 
         signatone.move_abs(dev_coor[x][0], dev_coor[x][1])
-        if x!=0: # only move up after the first membrane, first membrne is manually adjusted as of now
-            signatone.move_probes_z(-100) # move down by 100 microns before moving to the next membrane
+      
         # start etching
-        etch_one_membrane(siglent, signatone)
+        z_to_lower_1 = z_heights_1[x] + diff_z_1  # lower probe 1 to the membrane
+        z_to_lower_4 = z_heights_4[x] + diff_z_4  # lower probe 1 to the membrane
+        etch_one_membrane(siglent, signatone, x, z_to_lower_1, z_to_lower_4) 
         
     # check that the Siglent output has fully dropped to 0V
     volt_output = siglent.get_output()
@@ -323,11 +343,11 @@ if __name__ == '__main__':
                        upper-right grid Y coordinate)
     '''
     
-    siglent = Siglent.Siglent()
-    signatone = Signatone.Signatone()
+    # siglent = Siglent.Siglent()
+    # signatone = Signatone.Signatone()
     
-    signatone.set_device("CAP1")
-    signatone.move_z(-5000)
+    # signatone.set_device("CAP1")
+    # signatone.move_z(-5000)
     
     # img_count = 79
                 
@@ -344,4 +364,15 @@ if __name__ == '__main__':
     # #Functions.crop_using_square_detect(img_path, crop_img_path)
     # Functions.testing_square(crop_img_path)
     
-    #full_grid_etch(12 , 9 , 75 , 250 , -13727 , -12005, -13653, -14867 , -16469 , -14901)
+    #full_grid_etch(12 , 9 , 75 , 250 , -18149 , -7293, -18058, -10097 , -20899 , -10174)
+    
+    # signatone = Signatone.Signatone()
+    
+    # img_path = Functions.take_image(900)
+    # signatone.save_image(img_path)
+    # img = cv2.imread(img_path)
+
+    # if img is None:
+    #     print("Error: Failed to load image at", img_path)
+    # else:
+    #     Functions.auto_crop_from_dark_probes(img_path)
