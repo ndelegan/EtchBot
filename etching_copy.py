@@ -34,11 +34,11 @@ from queue import Queue
         None.
 
 """
-def etch_one_membrane(siglent:object, signatone:object,  x, z_to_lower_1, z_to_lower_4):
+def etch_one_membrane(siglent:object, signatone:object,  current_mem, z_to_lower_1, z_to_lower_4, affine_matrix, dev_xy:tuple, img_count_offset:int):
     # initializing our variables
     start_time = time.time()
     tether = False
-    img_count = 0
+    img_count = img_count_offset
     bubble_count = 0
     siglent.set_volt(8)
     siglent.set_curr(4)
@@ -68,51 +68,26 @@ def etch_one_membrane(siglent:object, signatone:object,  x, z_to_lower_1, z_to_l
             
             #stop=input("check pic")       
             # crop image to get targeted square
-            crop_name = 'CIM_' + str(img_count) + '.bmp'
-            crop_path = 'C:\\CM400\\photos\\'
-            crop_img_path = crop_path + crop_name
+            # crop_name = 'CIM_' + str(img_count) + '.bmp'
+            # crop_path = 'C:\\CM400\\photos\\'
+            # crop_img_path = crop_path + crop_name
 
+            
+            
+            
+            pred_x_img, pred_y_img = Functions.predict_crop_pixel_from_affine(dev_xy, affine_matrix)
+            print(f"Predicted crop center in image: ({pred_x_img}, {pred_y_img})")
 
-            #Functions.crop_image(700, 390, 350, 350, img_path, crop_name, crop_path)
-            #Functions.testing_square(  crop_img_path)
-            #need to correct measurements for targeted square (MANUAL RN)
-            #Functions.crop_image(1100, 1100, 200, 200, img_path, crop_name, crop_path)
-            #Functions.crop_image(700, 390, 340, 340, img_path, crop_name, crop_path)
-            
-            #6/4: testing automatic crop detection
-            
-            # cropped_img = Functions.crop_using_square_detect(img_path, crop_img_path)
-            # if not cropped_img:
-            #     print("skip due to no square detection")
-            #     continue
-            # print("cropped image:", cropped_img)
-            
-            # cv2.imshow("cropped membrane", cv2.imread(crop_img_path))
-            # cv2.waitKey(0)
-            # cv2.destroyAllWindows()
-                        
-            # image = cv2.imread(img_path)
-            
-            # x, y, w, h, _ = Functions.square_detect(img_path)
-            
-            # square_crop = image[y:y+h, x:x+w]
-            # cv2.imwrite(crop_img_path, square_crop)
-            
-            # TESTING: get current coordinates of square in pixels
-            #x, y, w, h, detected_square = Functions.square_detect(crop_img_path)
-            #rint(x, y, w, h, detected_square)
+            crop_img = Functions.crop_from_prediction(img_path, pred_x_img, pred_y_img, box_size=290)
 
-            #print(x, ' ', y, ' ', w, ' ', h, ' ', detected_square)
-            # TESTING: get current coordinates of probes in pixels    
-            #detected_probes, cap1, cap4 = Functions.probe_detection(crop_img_path)
-            # what shuld be an eroor if we dont see probes or square??? 
-            # if not detected_square or not detected_probes:
-            #     print('Square or probes not detected. Please re-adjust probes, chuck or scope through PM40 before starting the etch again.')
-            #     # disconnect from devices
-            #     siglent.close()
-            #     signatone.close()
-            #     quit()
+            cv2.imshow("Cropped Membrane", crop_img)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
 
+            temp_crop_path = "C:\\CM400\\photos\\temp_crop.bmp"
+            cv2.imwrite(temp_crop_path, crop_img)
+
+           
             # NOT READY: adjust probes until aligned with square
             #            pixel to micron for probes
             # Currently probes are being adjusted for first membrane manually
@@ -124,7 +99,7 @@ def etch_one_membrane(siglent:object, signatone:object,  x, z_to_lower_1, z_to_l
                 time.sleep(10)
                 
                 img_count += 1
-                
+                #NEW CROPPING FUNCTION  ADD HERE
                 # take picture through scope
                 img_path = Functions.take_image(img_count)
                 signatone.save_image(img_path)
@@ -148,19 +123,17 @@ def etch_one_membrane(siglent:object, signatone:object,  x, z_to_lower_1, z_to_l
                 
 
             # check current unetched area
-            dark_area =  77# Functions.areaDetectColorBinary(crop_img_path)
+            dark_area = Functions.areaDetectColorRange(temp_crop_path, (130, 25, 95), (175, 90, 205))
+            #dark_area =  77# Functions.areaDetectColorBinary(crop_img_path)
             
             print('dark area: ', dark_area)
             # current square in unetched and output is off/low
             if dark_area > 7 and siglent.get_output()[0] < 0.5 and bubble_count==0:
                 print('Confirmed Etchable Square.')
-                # currenty this is a manual check for every membrane
-                # we need to make manual check only for first membrane
-                # and then automate it for the rest of the membranes
-                if x==0:
+                if current_mem==0:
                     on = input('\nStart Etching? Check probe placement, lower them and enter any letter to start or \'q\' to quit: ')
                     
-                if x!=0:
+                if current_mem!=0:
                     signatone.set_device("CAP1")
                     signatone.move_z(z_to_lower_1) # move to the z height of the first probe
                     signatone.set_device("CAP4")                
@@ -185,8 +158,10 @@ def etch_one_membrane(siglent:object, signatone:object,  x, z_to_lower_1, z_to_l
                     
             # check tether percentage
             print("Checking dark area again")
-            dark_area = 6#  Functions.areaDetectColorBinary(crop_img_path)
-            print('dark area2: ', dark_area)       
+            
+            dark_area = Functions.areaDetectColorRange(temp_crop_path, (130, 25, 95), (175, 90, 205))
+            #dark_area = 6#  Functions.areaDetectColorBinary(crop_img_path)
+            print('dark area after: ', dark_area)       
             # end of etch
             if dark_area <= 7:
                 siglent.output_off()
@@ -217,7 +192,7 @@ def etch_one_membrane(siglent:object, signatone:object,  x, z_to_lower_1, z_to_l
             siglent.output_off()
             break
             
-    print("before pic delete")  
+ 
     # double check that output is off, delete images taken during etch  
     Functions.delete_image(img_count)
     siglent.reset_values()
@@ -225,13 +200,6 @@ def etch_one_membrane(siglent:object, signatone:object,  x, z_to_lower_1, z_to_l
     
     print('single etch end')    
     
-def display_feed(frame_queue):
-    while True:
-        frame = frame_queue.get()
-        cv2.imshow("Display", frame)
-        if cv2.waitKey(1) == ord('q'):
-            break
-
     
 """
 
@@ -255,10 +223,6 @@ def display_feed(frame_queue):
 
 """
 def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int, y_ll:int, x_ul:int, y_ul:int, x_ur:int, y_ur:int):
-    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-    if cap.isOpened() is True: 
-        print("yes")
-    else: print("No")
     # setting up our devices
     siglent = Siglent.Siglent()
     signatone = Signatone.Signatone()
@@ -271,30 +235,26 @@ def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int,
     gds_coor = Functions.get_mem_coords(row_mem, street, grid_len)
     dev_coor = Functions.apply_affine_all_mems(matrix, gds_coor, row_mem)
     
-     # get z height of middle of every membrane (should it be height of the probes? whci one? cuz thechicaaly i need both) 
-    z_heights_1=Functions.get_z_heights(num_mem, -4853, -4852, -4783,dev_coor, dst_points)# in relation to coordintes of cap1
-    z_heights_4=Functions.get_z_heights(num_mem, -7058, -7014, -6985,dev_coor, dst_points) # in relation to coordintes of cap4
-    # z of what? probes? which one? techinally need boths
-    z_when_touching_first_membrane_1=-7044
-    z_when_ready_to_etch_first_1=-6985 # couple of microns above the membrane, so probes are not touching it
+    
+    # get z height of middle of every membrane (should it be height of the probes? whci one? cuz thechicaaly i need both) 
+    z_heights_1=Functions.get_z_heights(num_mem, -6223, -6316, -6161,dev_coor, dst_points)# in relation to coordintes of cap1
+    z_heights_4=Functions.get_z_heights(num_mem, -8491, -8496, -8358,dev_coor, dst_points) # in relation to coordintes of cap4
+    
+    z_when_touching_first_membrane_1=-8491 # curently hard codded
+    z_when_ready_to_etch_first_1=-8355 # couple of microns above the membrane, so probes are not touching it
     diff_z_1 = z_when_ready_to_etch_first_1 - z_when_touching_first_membrane_1 # how much do we being it up after touching the first membrane
 
-    z_when_touching_first_membrane_4=0
-    z_when_ready_to_etch_first_4=0 # couple of microns above the membrane, so probes are not touching it
+    z_when_touching_first_membrane_4=-6223
+    z_when_ready_to_etch_first_4=-6171 # couple of microns above the membrane, so probes are not touching it
     diff_z_4 = z_when_ready_to_etch_first_4 - z_when_touching_first_membrane_4 # how much do we being it up after touching the first membrane
-        
-
-    print("before queue")
-    frame_queue = Queue()
-    thread = threading.Thread(target=display_feed, args=(frame_queue,))
-    thread.start()
-    print("before loop")
-    while True:
-        print("in loop")
-        ret, frame = cap.read()
-        if not ret:
-            break
-        frame_queue.put(frame.copy())  # Share frame to another output 
+    
+    
+    # make sure to bring probes up before this step and down to z when redy to etch after    
+    # CALIBRATION STEP - FULL AFFINE
+    print("\n--- Starting Full Affine Calibration Helper ---")
+    affine_matrix = Functions.calibration_helper_affine(signatone, dev_coor)
+    print("\n--- Calibration Done ---\n")
+    
         
    
     for x in range(0, num_mem):
@@ -302,11 +262,11 @@ def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int,
         signatone.set_device('WAFER') # in the program, chuck is actually called wafer, WAFER/wafer both work
         # move wafer 
         signatone.move_abs(dev_coor[x][0], dev_coor[x][1])
-      
+        print(f"\n--- Moving to Membrane {x} at stage XY: {dev_coor[x]} ---")
         # start etching
         z_to_lower_1 = z_heights_1[x] + diff_z_1  # lower probe 1 to the membrane
         z_to_lower_4 = z_heights_4[x] + diff_z_4  # lower probe 1 to the membrane
-        etch_one_membrane(siglent, signatone, x, z_to_lower_1, z_to_lower_4) 
+        etch_one_membrane(siglent, signatone, x, z_to_lower_1, z_to_lower_4,affine_matrix, dev_coor[x], img_count_offset=x*10) 
         
     # check that the Siglent output has fully dropped to 0V
     volt_output = siglent.get_output()
@@ -343,36 +303,4 @@ if __name__ == '__main__':
                        upper-right grid Y coordinate)
     '''
     
-    # siglent = Siglent.Siglent()
-    # signatone = Signatone.Signatone()
-    
-    # signatone.set_device("CAP1")
-    # signatone.move_z(-5000)
-    
-    # img_count = 79
-                
-    # # take picture through scope
-    # img_path = Functions.take_image(img_count)
-    # signatone.save_image(img_path)
-    # print(img_path)
-            
-    # # crop image to get targeted square
-    # crop_name = 'CIM_' + str(img_count) + '.bmp'
-    # crop_path = 'C:\\CM400\\photos\\'
-    # crop_img_path = crop_path + crop_name
-    # Functions.crop_image(750, 350, 500, 500, img_path, crop_name, crop_path)
-    # #Functions.crop_using_square_detect(img_path, crop_img_path)
-    # Functions.testing_square(crop_img_path)
-    
-    #full_grid_etch(12 , 9 , 75 , 250 , -18149 , -7293, -18058, -10097 , -20899 , -10174)
-    
-    # signatone = Signatone.Signatone()
-    
-    # img_path = Functions.take_image(900)
-    # signatone.save_image(img_path)
-    # img = cv2.imread(img_path)
-
-    # if img is None:
-    #     print("Error: Failed to load image at", img_path)
-    # else:
-    #     Functions.auto_crop_from_dark_probes(img_path)
+    full_grid_etch(3, 9, 75, 250, -18240, -6840, -18157, -9667, -20981, -9744)

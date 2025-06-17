@@ -844,9 +844,6 @@ def predict_crop_pixel_from_affine(stage_xy, affine_matrix):
 
 
 def calibration_helper_affine(signatone, dev_coor):
-    import functions as Functions  # ensure we have take_image()
-    import cv2
-
     stage_points = []
     image_points = []
     img_count = 0
@@ -856,9 +853,9 @@ def calibration_helper_affine(signatone, dev_coor):
         signatone.set_device('WAFER')
         signatone.move_abs(dev_coor[membrane_idx][0], dev_coor[membrane_idx][1])
         img_count += 1
-
+ 
         img_path = f"C:\\CM400\\photos\\FULL_membrane_{img_count}.bmp"
-        _ = Functions.take_image(img_count)
+        _ = take_image(img_count)
         signatone.save_image(img_path)
         print(f"Saved FULL image: {img_path}")
 
