@@ -9,7 +9,7 @@ import cv2
 import threading
 from queue import Queue
 
-def etch_one_membrane(siglent:object, signatone:object, calibration:dict, dev_xy:tuple, img_count_offset:int):
+def etch_one_membrane(siglent:object, signatone:object, affine_matrix, dev_xy:tuple, img_count_offset:int):
     start_time = time.time()
     tether = False
     img_count = img_count_offset
@@ -31,10 +31,10 @@ def etch_one_membrane(siglent:object, signatone:object, calibration:dict, dev_xy
             signatone.save_image(img_path)
             print("Full image:", img_path)
 
-            pred_x_img, pred_y_img = Functions.predict_crop_pixel_from_calibration(dev_xy, calibration)
+            pred_x_img, pred_y_img = Functions.predict_crop_pixel_from_affine(dev_xy, affine_matrix)
             print(f"Predicted crop center in image: ({pred_x_img}, {pred_y_img})")
 
-            crop_img = Functions.crop_from_prediction(img_path, pred_x_img, pred_y_img, box_size=300)
+            crop_img = Functions.crop_from_prediction(img_path, pred_x_img, pred_y_img, box_size=290)
 
             cv2.imshow("Cropped Membrane", crop_img)
             cv2.waitKey(0)
@@ -43,8 +43,12 @@ def etch_one_membrane(siglent:object, signatone:object, calibration:dict, dev_xy
             temp_crop_path = "C:\\CM400\\photos\\temp_crop.bmp"
             cv2.imwrite(temp_crop_path, crop_img)
 
-            dark_area = Functions.areaDetectColorBinary(temp_crop_path)
+            # dark_area = Functions.areaDetectColorBinary(temp_crop_path)
+            # print('dark area:', dark_area)
+            
+            dark_area = Functions.areaDetectColorRange(temp_crop_path, (130, 25, 95), (175, 90, 205))
             print('dark area:', dark_area)
+            
 
             if dark_area > 50 and siglent.get_output()[0] < 0.5:
                 print('Confirmed Etchable Square.')
@@ -57,17 +61,17 @@ def etch_one_membrane(siglent:object, signatone:object, calibration:dict, dev_xy
 
                 siglent.output_on()
 
-            dark_area = Functions.areaDetectColorBinary(temp_crop_path)
+            #dark_area = Functions.areaDetectColorBinary(temp_crop_path)
 
             if dark_area <= 7:
                 siglent.output_off()
                 signatone.set_device('CAP4')
                 x = signatone.get_cap()
                 xc = x.split(",")
-                signatone.move_z(str(float(xc[2]) + 100.0))
+                #signatone.move_z(str(float(xc[2]) + 100.0))
                 signatone.set_device('CAP1')
                 x = signatone.get_cap()
-                signatone.move_z(str(float(xc[2]) + 100.0))
+                #signatone.move_z(str(float(xc[2]) + 100.0))
                 tether = True
 
             start_time = time.time()
@@ -106,21 +110,25 @@ def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int,
     gds_coor = Functions.get_mem_coords(row_mem, street, grid_len)
     dev_coor = Functions.apply_affine_all_mems(matrix, gds_coor, row_mem)
 
-    calibration = Functions.calibration_helper(signatone, dev_coor)
+    # CALIBRATION STEP - FULL AFFINE
+    print("\n--- Starting Full Affine Calibration Helper ---")
+    affine_matrix = Functions.calibration_helper_affine(signatone, dev_coor)
+    print("\n--- Calibration Done ---\n")
 
     for x in range(num_mem):
         if x != 0:
             signatone.set_device('CAP4')
             xf = signatone.get_cap()
             xc = xf.split(",")
-            signatone.move_z(str(float(xc[2]) - 100.0))
+            #signatone.move_z(str(float(xc[2]) - 100.0))
             signatone.set_device('CAP1')
-            signatone.move_z(str(float(xc[2]) - 100.0))
+            #signatone.move_z(str(float(xc[2]) - 100.0))
 
         signatone.set_device('WAFER')
         signatone.move_abs(dev_coor[x][0], dev_coor[x][1])
+        print(f"\n--- Moving to Membrane {x} at stage XY: {dev_coor[x]} ---")
 
-        etch_one_membrane(siglent, signatone, calibration, dev_coor[x], img_count_offset=x*10)
+        etch_one_membrane(siglent, signatone, affine_matrix, dev_coor[x], img_count_offset=x*10)
 
     volt_output = siglent.get_output()
     while volt_output != 0:
@@ -133,4 +141,4 @@ def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int,
     signatone.close()
 
 if __name__ == '__main__':
-    full_grid_etch(3 , 9 , 75 , 250 , -15469 , -8262, -15420, -11084 , -18255 , -11122)
+    full_grid_etch(3, 9, 75, 250, -18240, -6840, -18157, -9667, -20981, -9744)

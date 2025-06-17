@@ -810,33 +810,7 @@ def testing_square(img_path):
         #cv2.destroyAllWindows()
 
 
-#6/11 Crop using calculations
-def compute_pixel_stage_scale(first_mem_image_center, first_mem_device_xy, second_mem_image_center, second_mem_device_xy):
-    dx_stage = second_mem_device_xy[0] - first_mem_device_xy[0]
-    dy_stage = second_mem_device_xy[1] - first_mem_device_xy[1]
-    
-    dx_pixels = second_mem_image_center[0] - first_mem_image_center[0]
-    dy_pixels = second_mem_image_center[1] - first_mem_image_center[1]
-    
-    pixels_per_micron_x = dx_pixels / dx_stage if dx_stage != 0 else 0
-    pixels_per_micron_y = dy_pixels / dy_stage if dy_stage != 0 else 0
-    
-    return {
-        'first_mem_image_center': first_mem_image_center,
-        'first_mem_device_xy': first_mem_device_xy,
-        'pixels_per_micron_x': pixels_per_micron_x,
-        'pixels_per_micron_y': pixels_per_micron_y
-    }
-    
-    
-def predict_crop_pixel_from_calibration(stage_xy, calibration):
-    delta_stage_x = stage_xy[0] - calibration['first_mem_device_xy'][0]
-    delta_stage_y = stage_xy[1] - calibration['first_mem_device_xy'][1]
-    
-    predicted_x_img = calibration['first_mem_image_center'][0] + delta_stage_x * calibration['pixels_per_micron_x']
-    predicted_y_img = calibration['first_mem_image_center'][1] + delta_stage_y * calibration['pixels_per_micron_y']
-    
-    return int(predicted_x_img), int(predicted_y_img)
+#6/13 Crop using affine calibration-Michelle
 
 def crop_from_prediction(image_path, center_x, center_y, box_size=300):
     image = cv2.imread(image_path)
@@ -851,41 +825,95 @@ def crop_from_prediction(image_path, center_x, center_y, box_size=300):
     crop = image[y1:y2, x1:x2]
     return crop
 
-def calibration_helper(signatone, dev_coor):
-    import keyboard
+def compute_affine_pixel_stage_transform(stage_points, image_points):
+    """
+    stage_points: list of 3 (x, y) tuples in stage coords
+    image_points: list of 3 (x, y) tuples in image pixel coords
+    """
+    src = np.array(stage_points, dtype=np.float32)
+    dst = np.array(image_points, dtype=np.float32)
 
-    # Move to first membrane
-    signatone.set_device('WAFER')
-    signatone.move_abs(dev_coor[0][0], dev_coor[0][1])
-    input("Positioned at first membrane. Capture image. Enter first_mem_image_center (x y): ")
-    x_img0 = int(input("x: "))
-    y_img0 = int(input("y: "))
-    first_mem_image_center = (x_img0, y_img0)
-    first_mem_device_xy = dev_coor[0]
+    affine_matrix = cv2.getAffineTransform(src, dst)
 
-    # Move to second membrane (recommended same row, next membrane)
-    signatone.move_abs(dev_coor[1][0], dev_coor[1][1])
-    input("Positioned at second membrane. Capture image. Enter second_mem_image_center (x y): ")
-    x_img1 = int(input("x: "))
-    y_img1 = int(input("y: "))
-    second_mem_image_center = (x_img1, y_img1)
-    second_mem_device_xy = dev_coor[1]
+    return affine_matrix
 
-    # Compute calibration
-    calibration = compute_pixel_stage_scale(first_mem_image_center, first_mem_device_xy,
-                                            second_mem_image_center, second_mem_device_xy)
+def predict_crop_pixel_from_affine(stage_xy, affine_matrix):
+    src_pt = np.array([stage_xy[0], stage_xy[1], 1.0])
+    dst_pt = np.matmul(affine_matrix, src_pt)
+    return int(dst_pt[0]), int(dst_pt[1])
 
-    print("\n--- Calibration Result ---")
-    print(f"First membrane device XY: {first_mem_device_xy}")
-    print(f"First membrane image center: {first_mem_image_center}")
-    print(f"Second membrane device XY: {second_mem_device_xy}")
-    print(f"Second membrane image center: {second_mem_image_center}")
-    print(f"Pixels per micron X: {calibration['pixels_per_micron_x']}")
-    print(f"Pixels per micron Y: {calibration['pixels_per_micron_y']}")
 
-    return calibration
+def calibration_helper_affine(signatone, dev_coor):
+    import functions as Functions  # ensure we have take_image()
+    import cv2
+
+    stage_points = []
+    image_points = []
+    img_count = 0
     
     
+    for i, membrane_idx in enumerate([0, 1, len(dev_coor) // 9]):
+        signatone.set_device('WAFER')
+        signatone.move_abs(dev_coor[membrane_idx][0], dev_coor[membrane_idx][1])
+        img_count += 1
+
+        img_path = f"C:\\CM400\\photos\\FULL_membrane_{img_count}.bmp"
+        _ = Functions.take_image(img_count)
+        signatone.save_image(img_path)
+        print(f"Saved FULL image: {img_path}")
+
+        # Setup click capture
+        clicked_point = []
+
+        def click_event(event, x, y, flags, param):
+            if event == cv2.EVENT_LBUTTONDOWN:
+                print(f"Clicked at: X={x}, Y={y}")
+                clicked_point.append((x, y))
+                cv2.destroyAllWindows()
+
+        # Show image
+        img = cv2.imread(img_path)
+        cv2.imshow(f"FULL_membrane_{img_count}", img)
+        cv2.setMouseCallback(f"FULL_membrane_{img_count}", click_event)
+
+        print("\nClick on the membrane center in the image window.")
+        cv2.waitKey(0)
+
+        if not clicked_point:
+            raise Exception("No click detected! Please click inside the image.")
+
+        x, y = clicked_point[0]
+
+        stage_points.append((dev_coor[membrane_idx][0], dev_coor[membrane_idx][1]))
+        image_points.append((x, y))
+
+    # Compute affine
+    affine_matrix = compute_affine_pixel_stage_transform(stage_points, image_points)
+
+    print("\n--- Affine Calibration Matrix ---")
+    print(affine_matrix)
+
+    return affine_matrix
+
+#6/16: detecting color instead of b&W-Michelle
+def areaDetectColorRange(img_path: str, lower_bound: tuple, upper_bound: tuple):
+    image = cv2.imread(img_path)
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    # Filter for a specific color range
+    lower = np.array(lower_bound)
+    upper = np.array(upper_bound)
+    mask = cv2.inRange(hsv, lower, upper)
+    # Count non-zero (white) pixels = matching color
+    match_pixels = np.count_nonzero(mask)
+    total_pixels = mask.size
+    percent_match = (match_pixels / total_pixels) * 100
+    cv2.imshow('Color Range Mask', mask)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    return int(percent_match)
+    
+
+#6/12: More testing  
 def get_z_heights(num_mem, z_ll, z_ul, z_ur,dev_points, dst_points):
 
     z_values = np.array([z_ll, z_ul, z_ur])
