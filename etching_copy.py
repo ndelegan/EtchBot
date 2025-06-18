@@ -20,7 +20,7 @@ import config
 import cv2
 import threading
 from queue import Queue
- 
+import water_pump 
 """
 
     etch_one_membrane : etches a single diamond membrane
@@ -34,7 +34,7 @@ from queue import Queue
         None.
 
 """
-def etch_one_membrane(siglent:object, signatone:object,  current_mem, z_to_lower_1, z_to_lower_4, affine_matrix, dev_xy:tuple, img_count_offset:int):
+def etch_one_membrane(siglent:object, signatone:object,  membrane_idx, z_to_lower_1, z_to_lower_4, affine_matrix, dev_xy:tuple, img_count_offset:int):
     # initializing our variables
     start_time = time.time()
     tether = False
@@ -58,6 +58,8 @@ def etch_one_membrane(siglent:object, signatone:object,  current_mem, z_to_lower
         # if 20 seconds have passed or start of new membrane: check on the membrane
         if lap_time > 20:
             # increase image counter
+
+            Functions.run_water_pump()
             img_count += 1
                 
             # take picture through scope
@@ -92,11 +94,12 @@ def etch_one_membrane(siglent:object, signatone:object,  current_mem, z_to_lower
             #            pixel to micron for probes
             # Currently probes are being adjusted for first membrane manually
             #  but we can automate it later
-            bubble_count=0#Functions.bubble_detect(bubble_count, img_path)
-            while bubble_count > 0:
+            bubble_count= Functions. detect_circles(img_path)#Functions.bubble_detect(bubble_count,  img_path)
+            print("bubbles", bubble_count)
+            while bubble_count ==True:
                 siglent.output_off()
                 # here add water
-                time.sleep(10)
+                Functions.run_water_pump()
                 
                 img_count += 1
                 #NEW CROPPING FUNCTION  ADD HERE
@@ -118,6 +121,7 @@ def etch_one_membrane(siglent:object, signatone:object,  current_mem, z_to_lower
                 print(x, y, w, h, detected_square)
                 
                 bubble_count=Functions.bubble_detect(bubble_count, img_path)
+                print("bubbles", bubble_count)
              
                 
                 
@@ -130,10 +134,10 @@ def etch_one_membrane(siglent:object, signatone:object,  current_mem, z_to_lower
             # current square in unetched and output is off/low
             if dark_area > 7 and siglent.get_output()[0] < 0.5 and bubble_count==0:
                 print('Confirmed Etchable Square.')
-                if current_mem==0:
+                if membrane_idx==0:
                     on = input('\nStart Etching? Check probe placement, lower them and enter any letter to start or \'q\' to quit: ')
                     
-                if current_mem!=0:
+                if membrane_idx!=0:
                     signatone.set_device("CAP1")
                     signatone.move_z(z_to_lower_1) # move to the z height of the first probe
                     signatone.set_device("CAP4")                
@@ -155,7 +159,9 @@ def etch_one_membrane(siglent:object, signatone:object,  current_mem, z_to_lower
         #         Functions.send_slack_message(config.Bubbles,"Bubble Obstruction!")
         #         NOT READY: water pump
         #         maybe trun off signatone output? add water? loop till no bubble on the square? turn machine back on?
-                    
+            
+             
+        
             # check tether percentage
             print("Checking dark area again")
             
@@ -165,7 +171,7 @@ def etch_one_membrane(siglent:object, signatone:object,  current_mem, z_to_lower
             # end of etch
             if dark_area <= 7:
                 siglent.output_off()
-                signatone.move_probes_z(500) # move up by 100 microns
+                signatone.move_probes_z(700) # move up by 700 microns
                 #sending confirmation message to slack
                 #Functions.send_slack_message(config.Diamonds,"Diamond Tether Appeared. Etch Complete!")
                 tether = True
@@ -254,7 +260,7 @@ def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int,
     print("\n--- Starting Full Affine Calibration Helper ---")
     affine_matrix = Functions.calibration_helper_affine(signatone, dev_coor)
     print("\n--- Calibration Done ---\n")
-    
+    signatone.move_probes_z(700)
         
    
     for x in range(0, num_mem):
@@ -302,5 +308,6 @@ if __name__ == '__main__':
                        upper-right grid X coordinate,
                        upper-right grid Y coordinate)
     '''
-    
+
+
     full_grid_etch(3, 9, 75, 250, -18240, -6840, -18157, -9667, -20981, -9744)

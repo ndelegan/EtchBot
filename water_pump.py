@@ -90,22 +90,22 @@ def pwm(freq, duty):
 
 
 
-# MAIN Code
+# # MAIN Code
 
-print("version=0x{:x}, addr=0x{:x}".format(get_version(), get_addr()))
-print("pid=0x{:x}, vid=0x{:x}".format(get_vid(), get_pid()))
+# print("version=0x{:x}, addr=0x{:x}".format(get_version(), get_addr()))
+# print("pid=0x{:x}, vid=0x{:x}".format(get_vid(), get_pid()))
 
-print("\n--------Initial Value------") 
-print("freq={}, duty={:.2f} enable={}".format(get_freq(), get_duty(), get_enable()))  
+# print("\n--------Initial Value------") 
+# print("freq={}, duty={:.2f} enable={}".format(get_freq(), get_duty(), get_enable()))  
 
-print("--------Set a new value------")  
-#pwm(freq=860,duty=0.82) # freq(183HZ-46875HZ) duty(0%-100%)
-set_freq(1000) #(183HZ-46875HZ)
-set_duty(0.82)#(0%-100%)
-set_enable(1)
-time.sleep(5)
-print("freq={}, duty={:.2f} enable={}".format(get_freq(), get_duty(), get_enable()))
+# print("--------Set a new value------")  
+# #pwm(freq=860,duty=0.82) # freq(183HZ-46875HZ) duty(0%-100%)
+# set_freq(1000) #(183HZ-46875HZ)
+# set_duty(0.82)#(0%-100%)
+# set_enable(1)
+# time.sleep(5)
+# print("freq={}, duty={:.2f} enable={}".format(get_freq(), get_duty(), get_enable()))
 
-print("--------Restore to factory settings(366HZ, duty ratio 50%, diable output)-------\n")
-pwm(freq=560, duty=0.5) # freq(183HZ-46875HZ) duty(0%-100%)
-set_enable(0)
+# print("--------Restore to factory settings(366HZ, duty ratio 50%, diable output)-------\n")
+# pwm(freq=560, duty=0.5) # freq(183HZ-46875HZ) duty(0%-100%)
+# set_enable(0)

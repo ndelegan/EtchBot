@@ -44,8 +44,9 @@ def input_values(volt_input, curr_input, sig):
     Raises:
         No errors. Assumes you are connected correctly.
 """
-def output_on(sig):
+def output_on(sig, status):
     sig.output_on()
+    status.config(text="   Output Status: ON", fg="green")
 
 
 """
@@ -58,8 +59,9 @@ def output_on(sig):
     Raises:
         No errors. Assumes you are connected correctly.
 """
-def output_off(sig):
+def output_off(sig, status):
     sig.output_off()
+    status.config(text="   Output Status: OFF", fg="red")
 
 
 """
@@ -170,17 +172,20 @@ def gui_popup():
     # --- control buttons section of GUI ---
     controls_frame = Frame(root)
     controls_frame.pack(anchor = "w")
+    
+    output_status = Label(controls_frame, text="   Output Status: OFF", fg="red")
+    output_status.pack(side=LEFT, padx=10)
 
-    on_btn = tk.Button(controls_frame, text="Output On", command=lambda: output_on(sig)) # output on button
+    on_btn = tk.Button(controls_frame, text="Output On", command=lambda: output_on(sig, output_status)) # output on button
     on_btn.pack(padx=15, pady=20, side=LEFT)
 
-    off_btn = tk.Button(controls_frame, text="Output Off", command=lambda: output_off(sig)) # output off button
+    off_btn = tk.Button(controls_frame, text="Output Off", command=lambda: output_off(sig, output_status)) # output off button
     off_btn.pack(padx=15, pady=20, side=LEFT)
 
     reset_btn = tk.Button(controls_frame, text="Reset Input to 0", command=lambda: reset_zero(sig)) # reset to 0 button
     reset_btn.pack(padx=15, pady=20, side=LEFT)
 
-    restart_btn = tk.Button(controls_frame, text="Reset Device", command=lambda: reset_device(sig)) # reset screen button
+    restart_btn = tk.Button(controls_frame, text="Reset All Vals to 0", command=lambda: reset_device(sig)) # reset screen button
     restart_btn.pack(padx=15, pady=20, side=LEFT)
 
 

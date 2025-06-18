@@ -30,7 +30,7 @@ import json
 import os
 import random
 import numpy as np
-
+import water_pump
 
 """
     
@@ -512,49 +512,6 @@ def probe_detection(img_path):
     return detected,rightProbe,leftProbe
 
 
-# def find_dark_probes(img_path):
-#     image = cv2.imread(img_path)
-#     if image is None:
-#         print("Image not found.")
-#         return False, None, None
-    
-#     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-#     # Use a stronger blur to unify probe edges better
-#     blur = cv2.GaussianBlur(gray, (11, 11), 0)
-#     # Looser threshold to catch more of the dark probe
-#     _, binary = cv2.threshold(blur, 85, 255, cv2.THRESH_BINARY_INV)
-#     # Find contours
-#     contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
-#     probe_candidates = []
-#     for cnt in contours:
-#         area = cv2.contourArea(cnt)
-#         if area < 1500:  # increased min area to ignore noise
-#             continue
-#         # Get center of mass
-#         M = cv2.moments(cnt)
-#         if M["m00"] == 0:
-#             continue
-#         cx = int(M["m10"] / M["m00"])
-#         cy = int(M["m01"] / M["m00"])
-#         probe_candidates.append((cx, cy))
-#         # Draw contour and dot
-#         cv2.drawContours(image, [cnt], -1, (0, 255, 255), 2)
-#         cv2.circle(image, (cx, cy), 6, (0, 255, 0), -1)
-        
-#     if len(probe_candidates) >= 1:
-#         sorted_probes = sorted(probe_candidates, key=lambda p: p[1])  # by vertical position
-#         top_probe = sorted_probes[0]
-#         bottom_probe = sorted_probes[-1] if len(probe_candidates) > 1 else None
-#         detected = True
-#     else:
-#         detected = False
-#         top_probe = bottom_probe = None
-        
-#     cv2.imshow("Probe Detection", image)
-#     cv2.waitKey(0)
-#     cv2.destroyAllWindows()
-#     return detected, top_probe, bottom_probe
 
 def coordsDiff(img_path):
     detected,rightProbe,leftProbe = probe_detection(img_path)
@@ -847,11 +804,26 @@ def calibration_helper_affine(signatone, dev_coor):
     stage_points = []
     image_points = []
     img_count = 0
-    
+    signatone.set_device('CAP4')
+    cap4_coor=signatone.get_cap()
+    cap4_coor_list=cap4_coor.split(",")
+         
+    signatone.set_device('CAP1')
+    cap1_coor=signatone.get_cap()
+    cap1_coor_list=cap1_coor.split(",")
     
     for i, membrane_idx in enumerate([0, 1, len(dev_coor) // 9]):
-        signatone.set_device('WAFER')
-        signatone.move_abs(dev_coor[membrane_idx][0], dev_coor[membrane_idx][1])
+        if i!=0:
+            signatone.move_probes_z(700)
+            
+            signatone.set_device('WAFER')
+            signatone.move_abs(dev_coor[membrane_idx][0], dev_coor[membrane_idx][1])
+            
+            signatone.set_device("CAP1")
+            signatone.move_z(int(float(cap1_coor_list[2]))+10) # move to the z height of the first probe
+            signatone.set_device("CAP4")                
+            signatone.move_z(int(float(cap4_coor_list[2]))+10)
+        
         img_count += 1
  
         img_path = f"C:\\CM400\\photos\\FULL_membrane_{img_count}.bmp"
@@ -880,6 +852,7 @@ def calibration_helper_affine(signatone, dev_coor):
             raise Exception("No click detected! Please click inside the image.")
 
         x, y = clicked_point[0]
+
 
         stage_points.append((dev_coor[membrane_idx][0], dev_coor[membrane_idx][1]))
         image_points.append((x, y))
@@ -984,3 +957,39 @@ def auto_crop_from_dark_probes(image_path, save_path="cropped_from_probes.png", 
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     return cropped
+
+def detect_circles(img_path):
+    # Read the image
+    image = cv2.imread(img_path)
+    if image is None:
+        print("Image not found or path is incorrect.")
+        return False
+    # Convert to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # Apply Gaussian blur
+    gray_blurred = cv2.GaussianBlur(gray, (9, 9), 2)
+    # Detect circles using HoughCircles
+    circles = cv2.HoughCircles(
+        gray_blurred,
+        cv2.HOUGH_GRADIENT,
+        dp=1.2,
+        minDist=20,
+        param1=50,
+        param2=30,
+        minRadius=5,
+        maxRadius=100
+    )
+    # Check if any circles were found
+    if circles is not None and len(circles[0]) > 0:
+        return True
+    else:
+        return False
+
+def run_water_pump():
+    print(" pumping water")
+    water_pump.pwm(183, 0.40)     # Set frequency and 40% power
+    water_pump.set_enable(1)       # Start pump
+    time.sleep(2)       # Pump for 2 seconds
+    water_pump.set_enable(0)       # Stop pump
+    print("Pump off ")
+    time.sleep(2) # Wait for water suface to calm down
