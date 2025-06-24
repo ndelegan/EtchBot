@@ -3,8 +3,11 @@
     Python class called "Siglent" to control the Siglent SPS5161x device.
 
     Authors: UIC Chicago Tech Circle Team (Lisset Rico, Lisette Ruano, Aima Quibuddin)
+              UIC Chicago Tech Circle Team 2025(Daisy Maldonado)
     Collaborators: Argonne National Laboratory (Nazar Delegan, Clayton Devault)
     Date Created: 06/20/2024
+    Date Updated: 06/05/2025
+
 
 """
 

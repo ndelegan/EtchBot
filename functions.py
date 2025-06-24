@@ -14,12 +14,22 @@
         Get Affine Transformation Author(s): Clayton DeVault, Claudia Jimenez
         Apply Affine Transformation Author(s): Claudia Jimenez
         Apply Affine Transformation for All Membranes Author(s): Claudia Jimenez
+        *************************************************************************
+        Crop From Prediction Author(s):  Michelle Montesinos
+        Compute Affine Pixel Stage Transform Author(s):  Michelle Montesinos
+        Pedict Crop Pixel From Affine Author(s): Michelle Montesinos
+        Calibration Helper Affine Author(s): Michelle Montesinos
+        Area Detect Color Range Author(s): Michelle Montesinos
+        Get Z Heights Author(s): Yana Ninovska
+        Run Water Pump Author(s): Elizabeth Ng
         
         
     Commenting/Code Structure was implemented by Lisset Rico.
         
     Collaborator(s): Argonne National Laboratory (Nazar Delegan, Clayton DeVault), Break Through Tech (Kyle Cheek)
     Date Created: 06/26/2024
+    Date Updated: 06/03/2025
+
 
 """
 
@@ -697,77 +707,21 @@ def apply_affine_all_mems(T, src_points_list, num_mem):
     return dst_points
 
 
-#6/4: TESTING automatic crop detection
-def crop_using_square_detect(img_path, crop_output_path):
-    print("running auto-cropping")
-    image = cv2.imread(img_path)
-    x, y, w, h, detected= square_detect(img_path)
-    
-    if not detected:
-        print("square not detected")
-        return None
-    
-    crop = image[y:y+h, x:x+w]
-    cv2.imwrite(crop_output_path, crop)
-    cv2.imshow("test", crop)
-    return crop_output_path
 
-def testing_square(img_path):
-        import cv2
-        import numpy as np
 
-        # Load image and preprocess
-        image = cv2.imread(img_path)
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        _, thresh = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
 
-        # Get image center
-        img_center_x = image.shape[1] // 2
-        img_center_y = image.shape[0] // 2
+"""
+    crop_from_prediction: 
 
-        # Find contours
-        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-        closest_square = None
-        min_distance = float('inf')
-
-        for cnt in contours:
-            approx = cv2.approxPolyDP(cnt, 0.02 * cv2.arcLength(cnt, True), True)
-            
-            if len(approx) == 4:  # Quadrilateral
-                x, y, w, h = cv2.boundingRect(approx)
-                
-                # Optional: filter out non-squares (based on aspect ratio)
-                if abs(w - h) > 10:
-                    continue
-
-                square_center_x = x + w // 2
-                square_center_y = y + h // 2
-
-                # Calculate Euclidean distance to image center
-                distance = np.sqrt((square_center_x - img_center_x) ** 2 + (square_center_y - img_center_y) ** 2)
-
-                if distance < min_distance:
-                    min_distance = distance
-                    closest_square = (x, y, w, h)
-
-        # Draw the closest square
-        if closest_square:
-            x, y, w, h = closest_square
-            print(f"Closest square top-left: ({x}, {y}), width: {w}, height: {h}")
-            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
-            cv2.circle(image, (x + w//2, y + h//2), 5, (255, 0, 0), -1)
-        else :
-            print("fail tp detect")
-        # Show result
-        cv2.imshow("Closest Square", image)
+    Args:
+        image_path,
+        center_x,
+        center_y,
+        box_size=300
+    Returns:
+        crop: 
         
-        cv2.waitKey(0)
-        #return x,y,w,h
-        #cv2.destroyAllWindows()
-
-
-#6/13 Crop using affine calibration-Michelle
+"""
 
 def crop_from_prediction(image_path, center_x, center_y, box_size=300):
     image = cv2.imread(image_path)
@@ -782,6 +736,16 @@ def crop_from_prediction(image_path, center_x, center_y, box_size=300):
     crop = image[y1:y2, x1:x2]
     return crop
 
+"""
+    compute_affine_pixel_stage_transform:
+
+    Args:
+        stage_points
+        image_points
+    Returns:
+        affine_matrix: 
+        
+"""
 def compute_affine_pixel_stage_transform(stage_points, image_points):
     """
     stage_points: list of 3 (x, y) tuples in stage coords
@@ -794,12 +758,31 @@ def compute_affine_pixel_stage_transform(stage_points, image_points):
 
     return affine_matrix
 
+"""
+    predict_crop_pixel_from_affine:
+
+    Args:
+        stage_xy
+        affine_matrix
+    Returns:
+        dst_points: 
+        
+"""
 def predict_crop_pixel_from_affine(stage_xy, affine_matrix):
     src_pt = np.array([stage_xy[0], stage_xy[1], 1.0])
     dst_pt = np.matmul(affine_matrix, src_pt)
     return int(dst_pt[0]), int(dst_pt[1])
 
+"""
+    calibration_helper_affine
 
+    Args:
+        signatone
+        dev_coor
+    Returns:
+       affine_matrix
+        
+"""
 def calibration_helper_affine(signatone, dev_coor):
     stage_points = []
     image_points = []
@@ -865,7 +848,18 @@ def calibration_helper_affine(signatone, dev_coor):
 
     return affine_matrix
 
-#6/16: detecting color instead of b&W-Michelle
+
+"""
+    areaDetectColorRange
+
+    Args:
+        img_path: str,
+        lower_bound: tuple,
+        upper_bound: tuple
+    Returns:
+       percent_match
+        
+"""
 def areaDetectColorRange(img_path: str, lower_bound: tuple, upper_bound: tuple):
     image = cv2.imread(img_path)
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -883,8 +877,16 @@ def areaDetectColorRange(img_path: str, lower_bound: tuple, upper_bound: tuple):
     return int(percent_match)
     
 
-#6/12: More testing  
-def get_z_heights(num_mem, z_ll, z_ul, z_ur,dev_points, dst_points):
+"""
+    get_z_heights
+
+    Args:
+        z_ll, z_ul, z_ur,dev_points, dst_points
+    Returns:
+        z_heights
+        
+""" 
+def get_z_heights( z_ll, z_ul, z_ur,dev_points, dst_points):
 
     z_values = np.array([z_ll, z_ul, z_ur])
     points_3d = np.column_stack((dst_points, z_values))
@@ -907,56 +909,6 @@ def get_z_heights(num_mem, z_ll, z_ul, z_ur,dev_points, dst_points):
     z_heights = np.array(z_heights)
     return z_heights
 
-def auto_crop_from_dark_probes(image_path, save_path="cropped_from_probes.png", margin=20):
-    image = cv2.imread(image_path)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    # Invert image so probes (dark) become white
-    inverted = cv2.bitwise_not(gray)
-    # Threshold to isolate dark regions (now white in inverted image)
-    _, thresh = cv2.threshold(inverted, 180, 255, cv2.THRESH_BINARY)
-    # Optional: remove noise
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,3))
-    cleaned = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=2)
-    # Find contours
-    contours, _ = cv2.findContours(cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    # Filter by area — ignore small dark blobs
-    large_contours = [c for c in contours if cv2.contourArea(c) > 50]
-    if len(large_contours) < 2:
-        print("Less than 2 dark blobs (probes) detected.")
-        return None
-    # Sort by area (descending) and take top 2
-    top_two = sorted(large_contours, key=cv2.contourArea, reverse=True)[:2]
-    # Get centers
-    centers = []
-    for c in top_two:
-        M = cv2.moments(c)
-        if M["m00"] != 0:
-            cx = int(M["m10"] / M["m00"])
-            cy = int(M["m01"] / M["m00"])
-            centers.append((cx, cy))
-    if len(centers) != 2:
-        print("Error getting probe centers.")
-        return None
-    # Define crop rectangle
-    (x1, y1), (x2, y2) = centers
-    x_min, x_max = min(x1, x2), max(x1, x2)
-    y_min, y_max = min(y1, y2), max(y1, y2)
-    top_margin = 106
-    bottom_margin = 50
-    left_margin = 64
-    right_margin = 11
-    # Add margin and clip to image size
-    height, width = image.shape[:2]
-    x_min = max(x_min + left_margin, 0)
-    x_max = min(x_max + right_margin, width)
-    y_min = max(y_min + top_margin, 0)
-    y_max = min(y_max - bottom_margin, height)
-    cropped = image[y_min:y_max, x_min:x_max]
-    cv2.imshow("Cropped From Probes", cropped)
-    cv2.imwrite(save_path, cropped)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-    return cropped
 
 def detect_circles(img_path):
     # Read the image
@@ -985,11 +937,18 @@ def detect_circles(img_path):
     else:
         return False
 
+"""
+    run_water_pump
+
+    Args:
+       None
+    Returns:
+        None
+        
+"""
 def run_water_pump():
-    print(" pumping water")
     water_pump.pwm(183, 0.40)     # Set frequency and 40% power
     water_pump.set_enable(1)       # Start pump
     time.sleep(2)       # Pump for 2 seconds
     water_pump.set_enable(0)       # Stop pump
-    print("Pump off ")
     time.sleep(2) # Wait for water suface to calm down

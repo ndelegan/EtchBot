@@ -3,7 +3,7 @@
     Automation program for the etching of diamond membranes of a 9x9 sample grid.
 
     Authors: UIC Chicago Tech Circle Team 2024 (Lisset Rico, Fernanda Villalpando)
-             UIC Chicago Tech Circle Team 2025()
+             UIC Chicago Tech Circle Team 2025 (Yana Ninovska, Michelle Montesinos, Elizabeth Ng)
     Collaborator(s): Argonne National Laboratory (Nazar Delegan, Clayton Devault)
     Date Created: 06/26/2024
     Date Updated: 06/02/2025
@@ -18,9 +18,7 @@ import functions as Functions
 import numpy as np
 import config
 import cv2
-import threading
-from queue import Queue
-import water_pump 
+
 """
 
     etch_one_membrane : etches a single diamond membrane
@@ -28,6 +26,12 @@ import water_pump
     Args:
         siglent: object
         signatone: object
+        membrane_idx: int -> index number of current membrane
+        z_to_lower_1:int -> z coordinates for probe1 for etching
+        z_to_lower_4:int -> z coordinates for probe4 for etching
+        affine_matrix:  -> 
+        dev_xy:tuple int: -> x and y coordinates of current membrane
+        img_count_offset:int ->
     Returns:
         None.
     Exceptions:
@@ -51,12 +55,12 @@ def etch_one_membrane(siglent:object, signatone:object,  membrane_idx, z_to_lowe
         lap_time = curr_time - start_time
         dark_area = 0
 
-        # if output is low assume 21 seconds for instant image taking
+        # if output is low assume  5 min and 1 seconds for instant image taking
         if (siglent.get_output()[0] < 0.5):
-            lap_time = 21
+            lap_time = 301
         
-        # if 20 seconds have passed or start of new membrane: check on the membrane
-        if lap_time > 20:
+        # if 300 seconds have passed or start of new membrane: check on the membrane
+        if lap_time > 300:
             # increase image counter
 
             Functions.run_water_pump()
@@ -66,17 +70,7 @@ def etch_one_membrane(siglent:object, signatone:object,  membrane_idx, z_to_lowe
             img_path = Functions.take_image(img_count)
             signatone.save_image(img_path)
             print("Full image:", img_path)
-            
-            
-            #stop=input("check pic")       
-            # crop image to get targeted square
-            # crop_name = 'CIM_' + str(img_count) + '.bmp'
-            # crop_path = 'C:\\CM400\\photos\\'
-            # crop_img_path = crop_path + crop_name
-
-            
-            
-            
+           
             pred_x_img, pred_y_img = Functions.predict_crop_pixel_from_affine(dev_xy, affine_matrix)
             print(f"Predicted crop center in image: ({pred_x_img}, {pred_y_img})")
 
@@ -128,7 +122,6 @@ def etch_one_membrane(siglent:object, signatone:object,  membrane_idx, z_to_lowe
 
             # check current unetched area
             dark_area = Functions.areaDetectColorRange(temp_crop_path, (130, 25, 95), (175, 90, 205))
-            #dark_area =  77# Functions.areaDetectColorBinary(crop_img_path)
             
             print('dark area: ', dark_area)
             # current square in unetched and output is off/low
@@ -139,11 +132,10 @@ def etch_one_membrane(siglent:object, signatone:object,  membrane_idx, z_to_lowe
                     
                 if membrane_idx!=0:
                     signatone.set_device("CAP1")
-                    signatone.move_z(z_to_lower_1) # move to the z height of the first probe
+                    signatone.move_z(z_to_lower_1) # move to the z height of the probe1
                     signatone.set_device("CAP4")                
-                    signatone.move_z(z_to_lower_4) # move to the z height of the second probe
+                    signatone.move_z(z_to_lower_4) # move to the z height of the probe4
                 
-                # change it to be "keyboard" check
                 if keyboard.is_pressed('q') :
                     # disconnect from devices
                     siglent.close()
@@ -165,9 +157,7 @@ def etch_one_membrane(siglent:object, signatone:object,  membrane_idx, z_to_lowe
             # check tether percentage
             print("Checking dark area again")
             
-            dark_area = Functions.areaDetectColorRange(temp_crop_path, (130, 25, 95), (175, 90, 205))
-            #dark_area = 6#  Functions.areaDetectColorBinary(crop_img_path)
-            print('dark area after: ', dark_area)       
+            dark_area = Functions.areaDetectColorRange(temp_crop_path, (130, 25, 95), (175, 90, 205))    
             # end of etch
             if dark_area <= 7:
                 siglent.output_off()
@@ -178,7 +168,6 @@ def etch_one_membrane(siglent:object, signatone:object,  membrane_idx, z_to_lowe
             
             # start the 20 second counter again
             start_time = time.time()
-        # maybe keep same letter for all the time? a or q?
         # if anything starts to go wrong user can enter 'a' to abort
         check = ''
         if keyboard.is_pressed('a'):
@@ -210,7 +199,7 @@ def etch_one_membrane(siglent:object, signatone:object,  membrane_idx, z_to_lowe
 """
 
     full_grid_etch : moves from one membrane to the next while calling etch_one_membrane between every movement
-    
+    z_ll_1:int, z_ll_4:int, z_ul_1:int, z_ul_4:int, z_ur_1:int, z_ur_4:int, z_t_1:int, z_e_1:int, z_t_4:int, z_e_4:int
     Args:
         num_mem: integer -> # of membranes
         row_mem: integer -> # of membranes in a row
@@ -222,12 +211,24 @@ def etch_one_membrane(siglent:object, signatone:object,  membrane_idx, z_to_lowe
         y_ul: integer -> upper-left grid Y coordinate
         x_ur: integer -> upper-right grid X coordinate
         y_ur: integer -> upper-right grid Y coordinate
+        z_ll_1: integer -> lower-left Z coordinate of probe #1
+        z_ll_4: integer -> lower-left Z coordinate of probe #4
+        z_ul_1: integer -> upper-left Z coordinate of probe #1
+        z_ul_4: integer -> upper-left Z coordinate of probe #4
+        z_ur_1: integer -> upper-right Z coordinate of probe #1
+        z_ur_4: integer -> upper-right Z coordinate of probe #4
+        z_t_1: integer -> lower-left Z coordinate of probe #1 when touching the grid
+        z_e_1: integer -> lower-left Z coordinate of probe #1 when sligly above the grid ready to etch
+        z_t_4: integer -> lower-left Z coordinate of probe #4 when touching the grid
+        z_e_4: integer -> lower-left Z coordinate of probe #14when sligly above the grid ready to etch
     Returns:
         None.
     Exceptions:
         None.
 
 """
+#(3,9,75,250, -17425.3, -12594.3, -5525.8, -9170.6, -20251.5, -12641.3, -5468.2, -9124.2, -17480.2, -9765.2, -5473.4, -9129.5, -5473.7, -9142, -5374.3, -8987)
+
 def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int, y_ll:int, x_ul:int, y_ul:int, x_ur:int, y_ur:int):
     # setting up our devices
     siglent = Siglent.Siglent()
@@ -242,17 +243,17 @@ def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int,
     dev_coor = Functions.apply_affine_all_mems(matrix, gds_coor, row_mem)
     
     
-    # get z height of middle of every membrane (should it be height of the probes? whci one? cuz thechicaaly i need both) 
-    z_heights_1=Functions.get_z_heights(num_mem, -6223, -6316, -6161,dev_coor, dst_points)# in relation to coordintes of cap1
-    z_heights_4=Functions.get_z_heights(num_mem, -8491, -8496, -8358,dev_coor, dst_points) # in relation to coordintes of cap4
+    # get z height coordinates of middle of every membrane 
+    z_heights_1=Functions.get_z_heights( -5525.8,-5468.2, -5473.4,dev_coor, dst_points)# in relation to coordintes of cap1
+    z_heights_4=Functions.get_z_heights( -9170.6, -9124.2, -9129.5,dev_coor, dst_points) # in relation to coordintes of cap4
     
-    z_when_touching_first_membrane_1=-8491 # curently hard codded
-    z_when_ready_to_etch_first_1=-8355 # couple of microns above the membrane, so probes are not touching it
-    diff_z_1 = z_when_ready_to_etch_first_1 - z_when_touching_first_membrane_1 # how much do we being it up after touching the first membrane
+    z_when_touching_first_membrane_1=-5473.7 # curently hard codded
+    z_when_ready_to_etch_first_1=-5374.3 # couple of microns above the membrane, so probes are not touching it
+    diff_z_1 = z_when_ready_to_etch_first_1 - z_when_touching_first_membrane_1 #  calculate distance we need to being up probe #1 after touching grid
 
-    z_when_touching_first_membrane_4=-6223
-    z_when_ready_to_etch_first_4=-6171 # couple of microns above the membrane, so probes are not touching it
-    diff_z_4 = z_when_ready_to_etch_first_4 - z_when_touching_first_membrane_4 # how much do we being it up after touching the first membrane
+    z_when_touching_first_membrane_4= -9142
+    z_when_ready_to_etch_first_4= -8987 
+    diff_z_4 = z_when_ready_to_etch_first_4 - z_when_touching_first_membrane_4 #  calculate distance we need to being up probe #4 after touching grid
     
     
     # make sure to bring probes up before this step and down to z when redy to etch after    
@@ -269,9 +270,10 @@ def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int,
         # move wafer 
         signatone.move_abs(dev_coor[x][0], dev_coor[x][1])
         print(f"\n--- Moving to Membrane {x} at stage XY: {dev_coor[x]} ---")
+        # calculate z coordinates for both probes for etching
+        z_to_lower_1 = z_heights_1[x] + diff_z_1  
+        z_to_lower_4 = z_heights_4[x] + diff_z_4  
         # start etching
-        z_to_lower_1 = z_heights_1[x] + diff_z_1  # lower probe 1 to the membrane
-        z_to_lower_4 = z_heights_4[x] + diff_z_4  # lower probe 1 to the membrane
         etch_one_membrane(siglent, signatone, x, z_to_lower_1, z_to_lower_4,affine_matrix, dev_coor[x], img_count_offset=x*10) 
         
     # check that the Siglent output has fully dropped to 0V
@@ -306,8 +308,19 @@ if __name__ == '__main__':
                        upper-left grid X coordinate,
                        upper-left grid Y coordinate,
                        upper-right grid X coordinate,
-                       upper-right grid Y coordinate)
+                       upper-right grid Y coordinate,
+                       lower-left Z coordinate of probe #1,
+                       lower-left Z coordinate of probe #4,
+                       upper-left Z coordinate of probe #1,
+                       upper-left Z coordinate of probe #4,
+                       upper-right Z coordinate of probe #1,
+                       upper-right Z coordinate of probe #4,
+                       lower-left Z coordinate of probe #1 when touching the grid,
+                       lower-left Z coordinate of probe #1 when sligly above the grid ready to etch,
+                       lower-left Z coordinate of probe #4 when touching the grid,
+                       lower-left Z coordinate of probe #14when sligly above the grid ready to etch)
     '''
 
 
-    full_grid_etch(3, 9, 75, 250, -18240, -6840, -18157, -9667, -20981, -9744)
+    full_grid_etch(3, 9, 75, 250, -17425.3, -12594.3, -20251.5, -12641.3, -17480.2, -9765.2)
+    
