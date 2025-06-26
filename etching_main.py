@@ -9,7 +9,6 @@
     Date Updated: 06/02/2025
 
 """
-# test test
 import time
 import keyboard
 import siglent_driver as Siglent
@@ -18,6 +17,7 @@ import functions as Functions
 import numpy as np
 import config
 import cv2
+import threading
 
 """
 
@@ -46,7 +46,6 @@ def etch_one_membrane(siglent:object, signatone:object,  membrane_idx, z_to_lowe
     bubble_count = 0
     siglent.set_volt(8)
     siglent.set_curr(4)
-
             
     # run while tether is yet to be finished or q is pressed
     while not tether:
@@ -57,13 +56,12 @@ def etch_one_membrane(siglent:object, signatone:object,  membrane_idx, z_to_lowe
 
         # if output is low assume  5 min and 1 seconds for instant image taking
         if (siglent.get_output()[0] < 0.5):
-            lap_time = 301
+            lap_time = 21
         
         # if 300 seconds have passed or start of new membrane: check on the membrane
-        if lap_time > 300:
+        if lap_time > 20:
             # increase image counter
-
-            Functions.run_water_pump()
+            #Functions.run_water_pump()
             img_count += 1
                 
             # take picture through scope
@@ -82,44 +80,31 @@ def etch_one_membrane(siglent:object, signatone:object,  membrane_idx, z_to_lowe
 
             temp_crop_path = "C:\\CM400\\photos\\temp_crop.bmp"
             cv2.imwrite(temp_crop_path, crop_img)
-
            
-            # NOT READY: adjust probes until aligned with square
-            #            pixel to micron for probes
-            # Currently probes are being adjusted for first membrane manually
-            #  but we can automate it later
-            bubble_count= Functions. detect_circles(img_path)#Functions.bubble_detect(bubble_count,  img_path)
-            print("bubbles", bubble_count)
-            while bubble_count ==True:
-                siglent.output_off()
-                # here add water
-                Functions.run_water_pump()
-                
-                img_count += 1
-                #NEW CROPPING FUNCTION  ADD HERE
-                # take picture through scope
-                img_path = Functions.take_image(img_count)
-                signatone.save_image(img_path)
-                print(img_path)
-                
-                        
-                # crop image to get targeted square
-                crop_name = 'CIM_' + str(img_count) + '.bmp'
-                crop_path = 'C:\\CM400\\photos\\'
-                crop_img_path = crop_path + crop_name
 
-                #need to correct measurements for targeted square (MANUAL RN)
-                Functions.crop_image(765, 345, 340, 340, img_path, crop_name, crop_path)
-                
-                x, y, w, h, detected_square = Functions.square_detect(crop_img_path)
-                print(x, y, w, h, detected_square)
-                
-                bubble_count=Functions.bubble_detect(bubble_count, img_path)
-                print("bubbles", bubble_count)
+            siglent.output_off()
+            # here add water
+            # currently not used due to hardware issue with water pump
+            #Functions.run_water_pump()
+            
+            img_count += 1
+            #NEW CROPPING FUNCTION
+            # take picture through scope
+            img_path = Functions.take_image(img_count)
+            signatone.save_image(img_path)
+            print(img_path)
+            
+            # crop image to get targeted square
+            crop_name = 'CIM_' + str(img_count) + '.bmp'
+            crop_path = 'C:\\CM400\\photos\\'
+            crop_img_path = crop_path + crop_name
+
+            #need to correct measurements for targeted square (MANUAL RN)
+            Functions.crop_image(765, 345, 340, 340, img_path, crop_name, crop_path)
+            
+            x, y, w, h, detected_square = Functions.square_detect(crop_img_path)
+            print(x, y, w, h, detected_square)
              
-                
-                
-
             # check current unetched area
             dark_area = Functions.areaDetectColorRange(temp_crop_path, (130, 25, 95), (175, 90, 205))
             
@@ -144,18 +129,9 @@ def etch_one_membrane(siglent:object, signatone:object,  membrane_idx, z_to_lowe
                 
                 siglent.output_on()
  
-        #     detect bubbles, notify team on slack, clean bubbles
-        #    bubble_count = Functions.bubble_detect(bubble_count, img_path)
-        #    if bubble_count > 0:
-        #         fix error "config.Bubbles"
-        #         Functions.send_slack_message(config.Bubbles,"Bubble Obstruction!")
-        #         NOT READY: water pump
-        #         maybe trun off signatone output? add water? loop till no bubble on the square? turn machine back on?
+
             
-             
-        
-            # check tether percentage
-            print("Checking dark area again")
+            print("Checking dark area again") # check tether percentage
             
             dark_area = Functions.areaDetectColorRange(temp_crop_path, (130, 25, 95), (175, 90, 205))    
             # end of etch
@@ -163,11 +139,11 @@ def etch_one_membrane(siglent:object, signatone:object,  membrane_idx, z_to_lowe
                 siglent.output_off()
                 signatone.move_probes_z(700) # move up by 700 microns
                 #sending confirmation message to slack
-                #Functions.send_slack_message(config.Diamonds,"Diamond Tether Appeared. Etch Complete!")
+                # Functions.send_slack_message(config.Diamonds,"Diamond Tether Appeared. Current Membrane Etch Complete!")
                 tether = True
-            
-            # start the 20 second counter again
+            # start the 20 sec or 5 min  counter again
             start_time = time.time()
+            
         # if anything starts to go wrong user can enter 'a' to abort
         check = ''
         if keyboard.is_pressed('a'):
@@ -180,19 +156,16 @@ def etch_one_membrane(siglent:object, signatone:object,  membrane_idx, z_to_lowe
             
             if check != 'q':
                 siglent.voltage_on()
-            
       
         if keyboard.is_pressed('q') or check == 'q':
             siglent.reset_values()
             siglent.output_off()
             break
             
- 
     # double check that output is off, delete images taken during etch  
     Functions.delete_image(img_count)
     siglent.reset_values()
     siglent.output_off()
-    
     print('single etch end')    
     
     
@@ -205,34 +178,32 @@ def etch_one_membrane(siglent:object, signatone:object,  membrane_idx, z_to_lowe
         row_mem: integer -> # of membranes in a row
         street: integer -> street width
         grid_len: integer -> length of one side of the grid
-        x_ll: integer -> lower-left grid X coordinate
-        y_ll: integer -> lower-left grid Y coordinate
-        x_ul: integer -> upper-left grid X coordinate
-        y_ul: integer -> upper-left grid Y coordinate
-        x_ur: integer -> upper-right grid X coordinate
-        y_ur: integer -> upper-right grid Y coordinate
-        z_ll_1: integer -> lower-left Z coordinate of probe #1
-        z_ll_4: integer -> lower-left Z coordinate of probe #4
-        z_ul_1: integer -> upper-left Z coordinate of probe #1
-        z_ul_4: integer -> upper-left Z coordinate of probe #4
-        z_ur_1: integer -> upper-right Z coordinate of probe #1
-        z_ur_4: integer -> upper-right Z coordinate of probe #4
-        z_t_1: integer -> lower-left Z coordinate of probe #1 when touching the grid
-        z_e_1: integer -> lower-left Z coordinate of probe #1 when sligly above the grid ready to etch
-        z_t_4: integer -> lower-left Z coordinate of probe #4 when touching the grid
-        z_e_4: integer -> lower-left Z coordinate of probe #14when sligly above the grid ready to etch
+        x_ul: float -> upper-left of grid's X coordinate
+        y_ul: float -> upper-left of grid's Y coordinate
+        x_ur: float -> upper-right of grid's X coordinate
+        y_ur: float -> upper-right of grid's Y coordinate
+        x_ll: float -> lower-left of grid's X coordinate
+        y_ll: float -> lower-left of grid's Y coordinate
+        z_ul_1: float -> Z coordinate of probe #1 at upper-left of grid
+        z_ul_4: float -> Z coordinate of probe #4 at upper-left of grid
+        z_ur_1: float -> Z coordinate of probe #1 at upper-right of grid
+        z_ur_4: float -> Z coordinate of probe #4 at upper-right of grid
+        z_ll_1: float -> Z coordinate of probe #1 at lower-left of grid
+        z_ll_4: float -> Z coordinate of probe #4 at lower-left of grid
+        z_t_1: float -> Z coordinate of probe #1 when touching the grid surrounding first membrane at the lower-left of grid
+        z_e_1: float -> Z coordinate of probe #1 when sligly hovering above the grid surrounding first membrane (ready for etch)
+        z_t_4: float -> Z coordinate of probe #4 when touching the grid surrounding first membrane at the lower-left of grid
+        z_e_4: float -> Z coordinate of probe #4 when sligly hovering above the grid surrounding first membrane (ready for etch)
     Returns:
         None.
     Exceptions:
         None.
 
 """
-#(3,9,75,250, -17425.3, -12594.3, -5525.8, -9170.6, -20251.5, -12641.3, -5468.2, -9124.2, -17480.2, -9765.2, -5473.4, -9129.5, -5473.7, -9142, -5374.3, -8987)
-
-def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int, y_ll:int, x_ul:int, y_ul:int, x_ur:int, y_ur:int):
+def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ul:float, y_ul:int, z_ul_1:float, z_ul_4:float, x_ur:float, y_ur:float, z_ur_1:float, z_ur_4:float, x_ll:float, y_ll:float, z_ll_1:float, z_ll_4:float, z_t_1:float, z_t_4:float, z_e_1:float, z_e_4:float, Signatone:object):
     # setting up our devices
     siglent = Siglent.Siglent()
-    signatone = Signatone.Signatone()
+    signatone = Signatone
     
     # begin creating the square membranes center coordinates list
     corners = Functions.calculate_corner_coords(row_mem, street, grid_len) # w/out trench 250 microns, w/ 200 microns
@@ -242,19 +213,17 @@ def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int,
     gds_coor = Functions.get_mem_coords(row_mem, street, grid_len)
     dev_coor = Functions.apply_affine_all_mems(matrix, gds_coor, row_mem)
     
-    
     # get z height coordinates of middle of every membrane 
-    z_heights_1=Functions.get_z_heights( -5525.8,-5468.2, -5473.4,dev_coor, dst_points)# in relation to coordintes of cap1
-    z_heights_4=Functions.get_z_heights( -9170.6, -9124.2, -9129.5,dev_coor, dst_points) # in relation to coordintes of cap4
-    
-    z_when_touching_first_membrane_1=-5473.7 # curently hard codded
-    z_when_ready_to_etch_first_1=-5374.3 # couple of microns above the membrane, so probes are not touching it
-    diff_z_1 = z_when_ready_to_etch_first_1 - z_when_touching_first_membrane_1 #  calculate distance we need to being up probe #1 after touching grid
+    z_heights_1=Functions.get_z_heights(z_ll_1, z_ul_1, z_ur_1, dev_coor, dst_points) # in relation to coordintes of cap1
+    z_heights_4=Functions.get_z_heights(z_ll_4, z_ul_4, z_ur_4, dev_coor, dst_points) # in relation to coordintes of cap4
 
-    z_when_touching_first_membrane_4= -9142
-    z_when_ready_to_etch_first_4= -8987 
-    diff_z_4 = z_when_ready_to_etch_first_4 - z_when_touching_first_membrane_4 #  calculate distance we need to being up probe #4 after touching grid
-    
+    z_when_touching_first_membrane_1 = z_t_1 
+    z_when_ready_to_etch_first_1 = z_e_1 # couple of microns above the membrane, so probes are not touching it
+    diff_z_1 = z_when_ready_to_etch_first_1 - z_when_touching_first_membrane_1 # calculate distance we need to being up probe #1 after touching grid
+
+    z_when_touching_first_membrane_4 = z_t_4
+    z_when_ready_to_etch_first_4 = z_e_4
+    diff_z_4 = z_when_ready_to_etch_first_4 - z_when_touching_first_membrane_4 # calculate distance we need to being up probe #4 after touching grid
     
     # make sure to bring probes up before this step and down to z when redy to etch after    
     # CALIBRATION STEP - FULL AFFINE
@@ -262,7 +231,6 @@ def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int,
     affine_matrix = Functions.calibration_helper_affine(signatone, dev_coor)
     print("\n--- Calibration Done ---\n")
     signatone.move_probes_z(700)
-        
    
     for x in range(0, num_mem):
         # change current device to wafer
@@ -291,10 +259,6 @@ def full_grid_etch(num_mem:int, row_mem:int, street:int, grid_len:int, x_ll:int,
     signatone.close()
 
 
-
-        
-   
-    
 if __name__ == '__main__':
     '''
         manually enter the following info in the given order:
@@ -320,7 +284,4 @@ if __name__ == '__main__':
                        lower-left Z coordinate of probe #4 when touching the grid,
                        lower-left Z coordinate of probe #14when sligly above the grid ready to etch)
     '''
-
-
-    full_grid_etch(3, 9, 75, 250, -17425.3, -12594.3, -20251.5, -12641.3, -17480.2, -9765.2)
-    
+    full_grid_etch(3,9,75,250, -17427.4, -12580.7, -5522.3, -9185.8, -20255.9, -12623.1, -5467.3, -9114.8, -17480.4, -9766.4, -5475.4, -9118.5, -5471.8, -9129.1, -5420.5, -9055, Signatone)

@@ -1,7 +1,8 @@
 # EtchBot
-Common repository for code and documentation of the 2024 BTTC Chicago Tech Circle Summer Project in the Argonne Foundry related to autonomous etching of membranes.
+Common repository for code and documentation of the 2024/2025 BTTC Chicago Tech Circle Summer Project in the Argonne Foundry related to autonomous etching of membranes.
 
-Author(s): Fernanda Villalpando, Lisset Rico, Claudia Jimenez, Aima Qutbuddin, Lisette Ruano, Andrea Muñoz
+Author(s): 2024 cohort: Fernanda Villalpando, Lisset Rico, Claudia Jimenez, Aima Qutbuddin, Lisette Ruano, Andrea Muñoz
+           2025 cohort: Yana Ninovska, Michelle Montesinos, Elizabeth Ng, Daisy Maldonado
 
 Argonne Collaborator(s): Nazar Delegan, Clayton Devault
 
@@ -11,7 +12,17 @@ Break Through Tech Collaborator(s): Kyle Cheek
 
 * Our task is to automate the etching process of diamond membranes using a computer vision, Signatone Voltage Source and Signatone Station Controls. 
 
-## Current Progress (08/08):
+
+## Current Progress (06/26/25):
+ - Created a GUI for Siglent with interactive controls.
+ - Built a main GUI to improve user experience and system control.
+ - Automated probe lowering using a tilt-based algorithm.
+ - Switched to Affine Calibration for more accurate square positioning.
+ - Improved etch detection by switching from grayscale to color-based analysis.
+ - Used water pump code, but currently facing hardware issues. 
+ - Removed bubble detection and now activate the water pump each time a picture is taken.
+
+## Past Progress (08/08/24):
  - GitHub localization.
  - Sending a slack message from bubbles and tether detection.
  - Signatone and Siglent Device Drivers using Python.
@@ -22,22 +33,12 @@ Break Through Tech Collaborator(s): Kyle Cheek
  - Water Pump by itself works.
  - Program has menu options.
 
-## To-Do (08/08):
- - Make GitHub private.
- - Refine existing code.
- - Convert pixel to device coordinates for probe movement through machine learning.
- - Use robust and formal testing.
 
 ## Running the Program
-There are two ways to run this program.
+There are one way to run this program.
 
-### First Option: Manually entering grid parameters into the code
-1. Open the etching.py file and scroll to the bottom of the page.
-2. You will see a call for the function called full_grid_etch with all the parameters that are passed into the function.
-3. If the chuck has moved from last time or unsure if it's where it was left last time update these parameters as neccessary.
-4. Run the file by using the command ```python etching.py```.
 
-### Second Option: Using the menu option to populate grid parameters
-1. Run the main.py file by using the command 
-   ``` python main.py ```.
-2. Once you start the program you will be asked questions to fill the parameters used in the full_grid_etch function in etching.py.
+###  Using the GUI to populate grid parameters
+1. Run the etching_gui.py file by using the command 
+   ``` python etching_gui.py ```.
+2. Once you start the program you will be asked questions to fill the parameters used in the full_grid_etch function in etching_main.py.

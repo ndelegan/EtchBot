@@ -3,14 +3,11 @@
     Python class called "Siglent" to control the Siglent SPS5161x device.
 
     Authors: UIC Chicago Tech Circle Team (Lisset Rico, Lisette Ruano, Aima Quibuddin)
-              UIC Chicago Tech Circle Team 2025(Daisy Maldonado)
+              UIC Chicago Tech Circle Team 2025 (Daisy Maldonado)
     Collaborators: Argonne National Laboratory (Nazar Delegan, Clayton Devault)
     Date Created: 06/20/2024
     Date Updated: 06/05/2025
-
-
 """
-
 import pyvisa
 import time
 
@@ -112,18 +109,29 @@ class Siglent:
 
 
     """
-        get_ouput : return current voltage output
+        get_ouput : return current voltage(V) output
 
         Args:
             self: class object
         Returns:
-            Returns a array with one value.
+            Returns an array with one value.
         Raises:
             No errors. Assumes you are connected correctly.
     """
     def get_output(self):
         return self.device.query_ascii_values("MEAS:VOLT?")
     
+    
+    """
+        get_current : return current current(A) output
+
+        Args:
+            self: class object
+        Returns:
+            Returns an array with one value.
+        Raises:
+            No errors. Assumes you are connected correctly.
+    """
     def get_current(self):
         return self.device.query_ascii_values("MEAS:CURR?")
 
@@ -154,18 +162,3 @@ class Siglent:
     """
     def close(self):
         self.device.close()
-        
-        
-    """
-        reset_device : resets all values
-
-        Args:
-            self: class object
-        Returns:
-            Empty return.
-        Raises:
-            No errors. Assumes you are connected correctly.
-    """
-    def reset_device(self):
-            self.device.write("*RST")
-            time.sleep(2)

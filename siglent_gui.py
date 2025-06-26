@@ -79,20 +79,6 @@ def reset_zero(sig):
 
 
 """
-    reset_devic3 : resets all values 
-
-    Args:
-        sig: Variable which allows calls to functions from siglent_driver 
-    Returns:
-        Empty return.
-    Raises:
-        No errors. Assumes you are connected correctly.
-"""
-def reset_device(sig):
-    sig.reset_device()
-
-
-"""
     live_readings : displays current readings of the voltage 
     and the current 
 
@@ -184,9 +170,6 @@ def gui_popup():
 
     reset_btn = tk.Button(controls_frame, text="Reset Input to 0", command=lambda: reset_zero(sig)) # reset to 0 button
     reset_btn.pack(padx=15, pady=20, side=LEFT)
-
-    restart_btn = tk.Button(controls_frame, text="Reset All Vals to 0", command=lambda: reset_device(sig)) # reset screen button
-    restart_btn.pack(padx=15, pady=20, side=LEFT)
 
 
     # --- live readings section of GUI ---

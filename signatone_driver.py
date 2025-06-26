@@ -202,11 +202,11 @@ class Signatone:
             No errors. Assumes you are connected correctly.
     """
     def move_probes_z(self, z:int):
-        #getting coordinates of probes and moving them up using other functions
+        #getting coordinates of probes and moving them up or down using other functions
         self.set_device('CAP4')
         cap4_coor=self.get_cap()
         cap4_coor_list=cap4_coor.split(",")
-        self.move_z(int(float(cap4_coor_list[2]))+z) # move up by 100? is this enough?
+        self.move_z(int(float(cap4_coor_list[2]))+z) 
                 
         self.set_device('CAP1')
         cap1_coor=self.get_cap()

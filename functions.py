@@ -706,12 +706,8 @@ def apply_affine_all_mems(T, src_points_list, num_mem):
         
     return dst_points
 
-
-
-
-
 """
-    crop_from_prediction: 
+    crop_from_prediction: Crops a square region from an image centered at a predicted coordinate with a defined box size
 
     Args:
         image_path,
@@ -719,31 +715,38 @@ def apply_affine_all_mems(T, src_points_list, num_mem):
         center_y,
         box_size=300
     Returns:
-        crop: 
+        crop
         
 """
 
 def crop_from_prediction(image_path, center_x, center_y, box_size=300):
+    # load the image from the specified path
     image = cv2.imread(image_path)
+    
+    # calculate half the box size for cropping
     half = box_size // 2
     
+    # get image dimensions
     h, w, _ = image.shape
+    
+    # calculate bounding box coordinates
     x1 = max(center_x - half, 0)
     x2 = min(center_x + half, w)
     y1 = max(center_y - half, 0)
     y2 = min(center_y + half, h)
     
+    # crop the image based on the calculated coordinates
     crop = image[y1:y2, x1:x2]
     return crop
 
 """
-    compute_affine_pixel_stage_transform:
+    compute_affine_pixel_stage_transform: Computes the affine transformation matrix that maps stage coordinates to image pixel coordinates
 
     Args:
         stage_points
         image_points
     Returns:
-        affine_matrix: 
+        affine_matrix
         
 """
 def compute_affine_pixel_stage_transform(stage_points, image_points):
@@ -751,15 +754,17 @@ def compute_affine_pixel_stage_transform(stage_points, image_points):
     stage_points: list of 3 (x, y) tuples in stage coords
     image_points: list of 3 (x, y) tuples in image pixel coords
     """
+    # convert list of points to NumPy arrays
     src = np.array(stage_points, dtype=np.float32)
     dst = np.array(image_points, dtype=np.float32)
 
+    # compute the affine transfomration matrix mapping stage coords to image coords
     affine_matrix = cv2.getAffineTransform(src, dst)
 
     return affine_matrix
 
 """
-    predict_crop_pixel_from_affine:
+    predict_crop_pixel_from_affine: Applies an affine transformation to predict image pixel coordinates from a stage coordinate
 
     Args:
         stage_xy
@@ -769,12 +774,17 @@ def compute_affine_pixel_stage_transform(stage_points, image_points):
         
 """
 def predict_crop_pixel_from_affine(stage_xy, affine_matrix):
+    # convert stage coordinate to homogeneous format
     src_pt = np.array([stage_xy[0], stage_xy[1], 1.0])
+    
+    # apply affine transformation to get pixel coordinates
     dst_pt = np.matmul(affine_matrix, src_pt)
+    
+    # return integer pixel coordinates
     return int(dst_pt[0]), int(dst_pt[1])
 
 """
-    calibration_helper_affine
+    calibration_helper_affine: Collects user-selected image points and known stage coordinates to generate an affine transform for pixel-to-stage mapping
 
     Args:
         signatone
@@ -784,9 +794,16 @@ def predict_crop_pixel_from_affine(stage_xy, affine_matrix):
         
 """
 def calibration_helper_affine(signatone, dev_coor):
+    # store stage coordinates
     stage_points = []
+    
+    # store corresponding image coordinates
     image_points = []
+    
+    # counter for saved images
     img_count = 0
+    
+    # get current z positions for CAP4 and CAP1
     signatone.set_device('CAP4')
     cap4_coor=signatone.get_cap()
     cap4_coor_list=cap4_coor.split(",")
@@ -795,26 +812,29 @@ def calibration_helper_affine(signatone, dev_coor):
     cap1_coor=signatone.get_cap()
     cap1_coor_list=cap1_coor.split(",")
     
+    # move thorugh three known stage points 
     for i, membrane_idx in enumerate([0, 1, len(dev_coor) // 9]):
         if i!=0:
+            # raise probes before moving to new membrane
             signatone.move_probes_z(700)
-            
             signatone.set_device('WAFER')
             signatone.move_abs(dev_coor[membrane_idx][0], dev_coor[membrane_idx][1])
             
+            # move probes to prior z position + small offset
             signatone.set_device("CAP1")
-            signatone.move_z(int(float(cap1_coor_list[2]))+10) # move to the z height of the first probe
+            signatone.move_z(int(float(cap1_coor_list[2]))+10)
             signatone.set_device("CAP4")                
             signatone.move_z(int(float(cap4_coor_list[2]))+10)
         
         img_count += 1
  
+        # take image and save it
         img_path = f"C:\\CM400\\photos\\FULL_membrane_{img_count}.bmp"
         _ = take_image(img_count)
         signatone.save_image(img_path)
         print(f"Saved FULL image: {img_path}")
 
-        # Setup click capture
+        # setup click capture
         clicked_point = []
 
         def click_event(event, x, y, flags, param):
@@ -823,7 +843,7 @@ def calibration_helper_affine(signatone, dev_coor):
                 clicked_point.append((x, y))
                 cv2.destroyAllWindows()
 
-        # Show image
+        # display image and capture click
         img = cv2.imread(img_path)
         cv2.imshow(f"FULL_membrane_{img_count}", img)
         cv2.setMouseCallback(f"FULL_membrane_{img_count}", click_event)
@@ -831,16 +851,17 @@ def calibration_helper_affine(signatone, dev_coor):
         print("\nClick on the membrane center in the image window.")
         cv2.waitKey(0)
 
+        # ensure click was captured
         if not clicked_point:
             raise Exception("No click detected! Please click inside the image.")
 
         x, y = clicked_point[0]
 
-
+        # append stage and image coordinates for calibration
         stage_points.append((dev_coor[membrane_idx][0], dev_coor[membrane_idx][1]))
         image_points.append((x, y))
 
-    # Compute affine
+    # compute affine matrix from the collected points
     affine_matrix = compute_affine_pixel_stage_transform(stage_points, image_points)
 
     print("\n--- Affine Calibration Matrix ---")
@@ -850,7 +871,7 @@ def calibration_helper_affine(signatone, dev_coor):
 
 
 """
-    areaDetectColorRange
+    areaDetectColorRange: Calculates the percentage of an image area that falls within a specified HSV color range
 
     Args:
         img_path: str,
@@ -861,35 +882,48 @@ def calibration_helper_affine(signatone, dev_coor):
         
 """
 def areaDetectColorRange(img_path: str, lower_bound: tuple, upper_bound: tuple):
+    # load image
     image = cv2.imread(img_path)
+    
+    # convert BGR image to HSV color space
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    # Filter for a specific color range
+    
+    # filter for a specific color range
     lower = np.array(lower_bound)
     upper = np.array(upper_bound)
     mask = cv2.inRange(hsv, lower, upper)
-    # Count non-zero (white) pixels = matching color
+    
+    # count how many pixels fall within the mask range
     match_pixels = np.count_nonzero(mask)
     total_pixels = mask.size
+    
+    # calculate the percentage of the image area that matches the target color
     percent_match = (match_pixels / total_pixels) * 100
+    
+    # show mask result to user
     cv2.imshow('Color Range Mask', mask)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+    
     return int(percent_match)
     
 
 """
-    get_z_heights
-
+    get_z_heights: calculates z-coordinates for each membrane based on the probe heights
     Args:
-        z_ll, z_ul, z_ur,dev_points, dst_points
+        z_ll: int -> z-coordinate of lower-left corner of the probe
+        z_ul: int -> z-coordinate of upper-left corner of the probe
+        z_ur: int -> z-coordinate of upper-right corner of the probe
+        dev_points: list of tuples -> (x, y) coordinates of the middle of each membrane
+        dst_points: list of tuples -> (x, y) coordinates of the lower-left, upper-left, and upper-right corners of the grid
     Returns:
-        z_heights
-        
+        z_heights: list of z-coordinates for each membrane
+
 """ 
 def get_z_heights( z_ll, z_ul, z_ur,dev_points, dst_points):
 
     z_values = np.array([z_ll, z_ul, z_ur])
-    points_3d = np.column_stack((dst_points, z_values))
+    points_3d = np.column_stack((dst_points, z_values)) # combine (X,Y) coordonates with Z-coordinates
     z_heights = []
     v1 = points_3d[1] - points_3d[0]  # Vector from upper-left to lower-left
     v2 = points_3d[2] - points_3d[0]  # Vector from upper-right to upper-left
@@ -903,7 +937,7 @@ def get_z_heights( z_ll, z_ul, z_ur,dev_points, dst_points):
         return -(A * x + B * y + D) / C
     
     for num in range(len(dev_points)):
-        coor=get_z(dev_points[num][0], dev_points[num][1])
+        coor=get_z(dev_points[num][0], dev_points[num][1]) #calculate z-coordinates for each membrane center
         z_heights.append(coor)
     
     z_heights = np.array(z_heights)
@@ -938,7 +972,7 @@ def detect_circles(img_path):
         return False
 
 """
-    run_water_pump
+    run_water_pump: pumps water for 2 seconds to clear any bubbles
 
     Args:
        None

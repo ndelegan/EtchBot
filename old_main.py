@@ -5,6 +5,10 @@
     Authors: UIC Chicago Tech Circle Team (Lisset Rico, Fernanda Villalpando)
     Collaborator(s): Argonne National Laboratory (Nazar Delegan, Clayton Devault)
     Date Created: 06/26/2024
+    
+    ''' 06//26/2025 IMPORTANT  UPDATE
+        Current code is not updated and doesn't ask user for input of new variables. Please use etching_gui.py instead
+    '''
 
 """
 
